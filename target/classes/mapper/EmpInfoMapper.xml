@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hkd.mapper.EmpInfoDao">
+    
+    <resultMap id="EmpInfoResultMap" type="com.hkd.pojo.EmpInfo">
+        <id column="emp_id" property="empId" />
+        <result column="emp_no" property="empNo" />
+        <result column="emp_name" property="empName" />
+        <result column="dept_id" property="deptId" />
+        <result column="phone" property="phone" />
+        <result column="email" property="email" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    <select id="findAllCount" resultType="int">
+        SELECT count(*) FROM emp_info
+    </select>
+    
+    <select id="findAll"   resultMap="EmpInfoResultMap">
+        SELECT * FROM emp_info limit #{offset},#{pageSize}
+    </select>
+
+    <select id="findCount" resultType="int">
+        SELECT count(*) FROM emp_info where status=#{status}
+    </select>
+
+    <select id="findByEmpNo"  resultMap="EmpInfoResultMap">
+        SELECT * FROM emp_info WHERE emp_no like concat('%',#{empNo},'%') limit #{offset},#{pageSize}
+    </select>
+
+    <select id="findCountByEmpNo" parameterType="string" resultType="int">
+        SELECT count(*) FROM emp_info WHERE emp_no like concat('%',#{empNo},'%')
+    </select>
+
+    <insert id="insert" parameterType="com.hkd.pojo.EmpInfo" useGeneratedKeys="true" keyProperty="empId">
+        INSERT INTO emp_info(emp_no, emp_name, dept_id, phone, email, status, create_time, update_time)
+        VALUES(#{empNo}, #{empName}, #{deptId}, #{phone}, #{email}, #{status}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <update id="update" parameterType="com.hkd.pojo.EmpInfo">
+        UPDATE emp_info SET
+            emp_no = #{empNo},
+            emp_name = #{empName},
+            dept_id = #{deptId},
+            phone = #{phone},
+            email = #{email},
+            status = #{status},
+            update_time = #{updateTime}
+        WHERE emp_id = #{empId}
+    </update>
+    
+    <delete id="delete" parameterType="int">
+        DELETE FROM emp_info WHERE emp_id = #{empId}
+    </delete>
+
+    <select id="findByNo"  resultMap="EmpInfoResultMap">
+        SELECT * from emp_info where emp_no=#{empNo}
+    </select>
+
+    <select id="findById" parameterType="int" resultMap="EmpInfoResultMap">
+        SELECT * from emp_info where emp_id = #{empId}
+    </select>
+    
+    <select id="findByDeptId" parameterType="int" resultMap="EmpInfoResultMap">
+        SELECT * FROM emp_info WHERE dept_id = #{deptId}
+    </select>
+    
+    <select id="findByStatus" parameterType="byte" resultMap="EmpInfoResultMap">
+        SELECT * FROM emp_info WHERE status = #{status}
+    </select>
+    
+    <select id="findByEmpNameLike" parameterType="string" resultMap="EmpInfoResultMap">
+        SELECT * FROM emp_info WHERE emp_name LIKE CONCAT('%', #{empName}, '%')
+    </select>
+
+    <!-- 根据年份查询员工数量 -->
+    <select id="findCountByYear" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM emp_info WHERE YEAR(create_time) = #{year}
+    </select>
+
+    <!-- 根据电话模糊查询员工（分页） -->
+    <select id="findByPhoneLike" resultMap="EmpInfoResultMap">
+        SELECT * FROM emp_info WHERE phone LIKE CONCAT('%', #{phone}, '%') LIMIT #{offset}, #{pageSize}
+    </select>
+    <select id="findCountByPhoneLike" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM emp_info WHERE phone LIKE CONCAT('%', #{phone}, '%')
+    </select>
+
+    <!-- 根据邮箱模糊查询员工（分页） -->
+    <select id="findByEmailLike" resultMap="EmpInfoResultMap">
+        SELECT * FROM emp_info WHERE email LIKE CONCAT('%', #{email}, '%') LIMIT #{offset}, #{pageSize}
+    </select>
+    <select id="findCountByEmailLike" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM emp_info WHERE email LIKE CONCAT('%', #{email}, '%')
+    </select>
+
+    <!-- 根据状态查询员工（分页） -->
+    <select id="findByStatusPaged" resultMap="EmpInfoResultMap">
+        SELECT * FROM emp_info WHERE status = #{status} LIMIT #{offset}, #{pageSize}
+    </select>
+    <select id="findCountByStatus" parameterType="byte" resultType="int">
+        SELECT COUNT(*) FROM emp_info WHERE status = #{status}
+    </select>
+
+    <!-- 根据姓名模糊查询员工（分页） -->
+    <select id="findByEmpNameLikePaged" resultMap="EmpInfoResultMap">
+        SELECT * FROM emp_info WHERE emp_name LIKE CONCAT('%', #{empName}, '%') LIMIT #{offset}, #{pageSize}
+    </select>
+    <select id="findCountByEmpNameLike" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM emp_info WHERE emp_name LIKE CONCAT('%', #{empName}, '%')
+    </select>
+</mapper>

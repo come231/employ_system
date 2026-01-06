@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hkd.mapper.SysOperationLogDao">
+    
+    <resultMap id="SysOperationLogResultMap" type="com.hkd.pojo.SysOperationLog">
+        <id column="log_id" property="logId" />
+        <result column="user_id" property="userId" />
+        <result column="username" property="username" />
+        <result column="role_name" property="roleName" />
+        <result column="module" property="module" />
+        <result column="operation_type" property="operationType" />
+        <result column="operation_content" property="operationContent" />
+        <result column="operation_time" property="operationTime" />
+        <result column="status" property="status" />
+        <result column="error_msg" property="errorMsg" />
+    </resultMap>
+    
+    <select id="findAllCount" resultType="int">
+        SELECT COUNT(*) FROM sys_operation_log
+    </select>
+    
+    <select id="findAll" resultMap="SysOperationLogResultMap">
+        SELECT * FROM sys_operation_log ORDER BY operation_time DESC LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="findById" parameterType="long" resultMap="SysOperationLogResultMap">
+        SELECT * FROM sys_operation_log WHERE log_id = #{logId}
+    </select>
+    
+    <select id="findCountByUsername" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM sys_operation_log WHERE username LIKE CONCAT('%', #{username}, '%')
+    </select>
+    
+    <select id="findByUsername" resultMap="SysOperationLogResultMap">
+        SELECT * FROM sys_operation_log WHERE username LIKE CONCAT('%', #{username}, '%') ORDER BY operation_time DESC LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="findCountByModule" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM sys_operation_log WHERE module LIKE CONCAT('%', #{module}, '%')
+    </select>
+    
+    <select id="findByModule" resultMap="SysOperationLogResultMap">
+        SELECT * FROM sys_operation_log WHERE module LIKE CONCAT('%', #{module}, '%') ORDER BY operation_time DESC LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="findCountByOperationType" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM sys_operation_log WHERE operation_type LIKE CONCAT('%', #{operationType}, '%')
+    </select>
+    
+    <select id="findByOperationType" resultMap="SysOperationLogResultMap">
+        SELECT * FROM sys_operation_log WHERE operation_type LIKE CONCAT('%', #{operationType}, '%') ORDER BY operation_time DESC LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="findCountByDateRange" resultType="int">
+        SELECT COUNT(*) FROM sys_operation_log
+        <where>
+            <if test="startDate != null">
+                AND operation_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND operation_time &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="findByDateRange" resultMap="SysOperationLogResultMap">
+        SELECT * FROM sys_operation_log
+        <where>
+            <if test="startDate != null">
+                AND operation_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND operation_time &lt;= #{endDate}
+            </if>
+        </where>
+        ORDER BY operation_time DESC LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <insert id="insert" parameterType="com.hkd.pojo.SysOperationLog" useGeneratedKeys="true" keyProperty="logId">
+        INSERT INTO sys_operation_log(user_id, username, role_name, module, operation_type, operation_content, operation_time, status, error_msg)
+        VALUES(#{userId}, #{username}, #{roleName}, #{module}, #{operationType}, #{operationContent}, #{operationTime}, #{status}, #{errorMsg})
+    </insert>
+</mapper>

@@ -1,0 +1,341 @@
+/* 复用员工列表样式风格，针对性调整请假列表样式 */
+/* 全局样式继承common.css，此处仅做个性化调整 */
+body {
+    padding-top: 70px; /* 完全等于顶部导航栏高度，先给body顶部预留导航栏空间 */
+    background-color: #f5f7fa;
+    color: #333;
+    margin: 0;
+    font-family: "Microsoft Yahei", Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* 主内容区布局 */
+.main-content {
+    margin-left: 280px;
+    margin-top: 20px; /* 在body预留70px的基础上，再增加20px间距，避免主内容紧贴导航栏 */
+    padding: 0 0 30px 0;
+    min-height: calc(100vh - 90px); /* 70px（导航栏） + 20px（顶部间距）= 90px */
+    box-sizing: border-box;
+}
+.main-content.expand {
+    margin-left: 0;
+}
+
+/* 请假类型标签样式 */
+.leave-type-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 400;
+}
+/* 事假 */
+.leave-type-personal {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+/* 病假 */
+.leave-type-sick {
+    background-color: #f3e5f5;
+    color: #8e24aa;
+}
+/* 年假 */
+.leave-type-annual {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+/* 其他假 */
+.leave-type-other {
+    background-color: #fff3e0;
+    color: #f57c00;
+}
+
+/* 审批状态标签样式 */
+.approve-status-tag {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+/* 新增：已审批按钮样式（灰色不可点击） */
+.approve-btn.disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    pointer-events: none; /* 禁止点击事件 */
+}
+.approve-btn.disabled:hover {
+    background-color: #cccccc; /* 禁用hover效果 */
+}
+/* 待审批 */
+.status-pending {
+    background-color: #fff8e1;
+    color: #ff8f00;
+    border: 1px solid #ffe082;
+}
+/* 通过 */
+.status-pass {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+/* 驳回 */
+.status-reject {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+/* 请假表格样式（新增阴影效果，与员工页面一致） */
+.leave-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    /* 表格整体阴影，与员工页面一致 */
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    overflow: hidden; /* 配合border-radius隐藏溢出 */
+}
+
+/* 表格隔行变色 */
+.leave-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* 表格标题栏（复用暖色调渐变） */
+.leave-table thead {
+    background: linear-gradient(135deg, #f79f1f 0%, #ffbe76 100%);
+    color: #fff;
+    position: relative;
+}
+
+.leave-table thead::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0V0zm2 2v2h2V2H2zm0 4v2h2V6H2zm0 4v2h2v-2H2zm0 4v2h2v-2H2zm0 4v2h2v-2H2zm4 0v2h2v-2H6zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2zm-4-4v2h2v-2h-2zm0-4v2h2v-2h-2zm0-4v2h2v-2h-2zm0-4v2h2V2h-2zm4 4v2h2V6h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2zm-4-8v2h2v-2h-2zm0-4v2h2V6h-2zm0-4v2h2V2h-2zm4 8v2h2v-2h-2zm0-4v2h2V6h-2zm0-4v2h2V2h-2zm4 12v2h2v-2h-2zm0-4v2h2v-2h-2zm0-4v2h2v-2h-2zm0-4v2h2V2h-2z' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E");
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.leave-table th {
+    padding: 18px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 16px;
+    border-bottom: none;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
+}
+
+.leave-table th:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 15%;
+    height: 70%;
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.leave-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid #f8f8f8;
+    color: #555;
+    transition: all 0.2s ease;
+}
+
+/* 表格行悬浮效果（增强阴影，与员工页面一致） */
+.leave-table tbody tr {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.leave-table tbody tr:hover {
+    background-color: #fff9f0;
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(247, 159, 31, 0.08); /* 悬浮阴影，与员工页面一致 */
+    z-index: 2;
+}
+
+.leave-table tbody tr:hover td {
+    color: #333;
+}
+
+.leave-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* 请假理由列+审批意见列自动换行 */
+.leave-reason-col, .approve-opinion-col {
+    word-wrap: break-word;
+    word-break: break-all;
+    max-width: 200px;
+}
+
+/* 操作列样式 */
+.operate-col {
+    min-width: 120px;
+}
+.approve-btn {
+    padding: 6px 12px;
+    background-color: #f79f1f;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+.approve-btn:hover {
+    background-color: #e68a00;
+}
+
+/* 分页控件样式（完全复用员工列表分页样式，保证视觉统一） */
+.pagination-container {
+    width: 100%;
+    padding: 20px 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #faf6f0 0%, #fff9f0 100%);
+    border-top: 2px solid #f0e6d6;
+    flex-wrap: wrap;
+    gap: 15px;
+    /* 分页容器阴影，与员工页面一致 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-top: 15px;
+    border-radius: 8px;
+}
+
+.pagination-info:first-child {
+    font-size: 15px;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-size-select {
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #444;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.page-size-select:focus {
+    border-color: #2f5496;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-btn {
+    height: 40px;
+    min-width: 40px;
+    padding: 0 12px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #444;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: #2f5496;
+    color: #2f5496;
+    background-color: #f0f5ff;
+    transform: translateY(-1px);
+}
+
+.page-btn:disabled {
+    cursor: not-allowed;
+    color: #ccc;
+    background-color: #f8f8f8;
+    border-color: #f0f0f0;
+}
+
+.page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-number {
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #444;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-number:hover:not(.active) {
+    color: #2f5496;
+    background-color: #f0f5ff;
+    transform: translateY(-1px);
+}
+
+.page-number.active {
+    background: linear-gradient(135deg, #f79f1f 0%, #ffbe76 100%);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(247, 159, 31, 0.2);
+}
+
+.pagination-info:last-child {
+    font-size: 15px;
+    color: #444;
+    font-weight: 500;
+}
+
+/* 小屏幕适配 */
+@media (max-width: 768px) {
+    .top-bar-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .search-container {
+        width: 100%;
+        margin-top: 10px;
+    }
+    .pagination-container {
+        justify-content: center;
+    }
+    .pagination-info:first-child,
+    .pagination-info:last-child {
+        width: 100%;
+        justify-content: center;
+    }
+    .leave-reason-col, .approve-opinion-col {
+        max-width: 100px;
+    }
+    /* 小屏幕下表格容器边距适配 */
+    .table-container {
+        padding: 0 10px;
+    }
+}

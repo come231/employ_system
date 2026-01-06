@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hkd.mapper.SysRoleDao">
+    
+    <resultMap id="SysRoleResultMap" type="com.hkd.pojo.SysRole">
+        <id column="role_id" property="roleId" />
+        <result column="role_name" property="roleName" />
+        <result column="role_desc" property="roleDesc" />
+        <result column="role_type" property="roleType" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+    
+    <select id="findAll" resultMap="SysRoleResultMap">
+        SELECT * FROM sys_role
+    </select>
+    
+    <select id="findById" parameterType="int" resultMap="SysRoleResultMap">
+        SELECT * FROM sys_role WHERE role_id = #{roleId}
+    </select>
+    
+    <insert id="insert" parameterType="com.hkd.pojo.SysRole" useGeneratedKeys="true" keyProperty="roleId">
+        INSERT INTO sys_role(role_name, role_desc, role_type, status, create_time)
+        VALUES(#{roleName}, #{roleDesc}, #{roleType}, #{status}, #{createTime})
+    </insert>
+    
+    <update id="update" parameterType="com.hkd.pojo.SysRole">
+        UPDATE sys_role SET
+            role_name = #{roleName},
+            role_desc = #{roleDesc},
+            role_type = #{roleType},
+            status = #{status}
+        WHERE role_id = #{roleId}
+    </update>
+    
+    <delete id="delete" parameterType="int">
+        DELETE FROM sys_role WHERE role_id = #{roleId}
+    </delete>
+    
+    <select id="findByRoleType" parameterType="byte" resultMap="SysRoleResultMap">
+        SELECT * FROM sys_role WHERE role_type = #{roleType}
+    </select>
+    
+    <select id="findByStatus" parameterType="byte" resultMap="SysRoleResultMap">
+        SELECT * FROM sys_role WHERE status = #{status}
+    </select>
+
+    <select id="findByRoleName" parameterType="string" resultMap="SysRoleResultMap">
+        SELECT * FROM sys_role WHERE role_name = #{roleName}
+    </select>
+</mapper>

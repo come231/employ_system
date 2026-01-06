@@ -1,0 +1,650 @@
+/* 已存在的样式，无需改动 */
+body {
+    padding-top: 70px; /* 关键：为顶部固定标题栏预留70px高度 */
+    background-color: #f5f7fa;
+    color: #333;
+    margin: 0;
+    font-family: "Microsoft Yahei", Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* 主内容区布局（最终优化版，彻底避开顶部标题栏+侧边栏） */
+.main-content {
+    margin-left: 280px; /* 侧边栏宽度 */
+    margin-top: 20px; /* 与顶部标题栏的间距（避免紧贴） */
+    padding: 0 0 30px 0; /* 取消顶部padding，防止重复占位 */
+    min-height: calc(100vh - 90px); /* 减去标题栏高度(70px) + 顶部间距(20px) */
+    box-sizing: border-box;
+    transition: margin-left 0.3s ease; /* 保留侧边栏折叠过渡动画 */
+}
+
+/* 侧边栏折叠后适配 */
+.main-content.expand {
+    margin-left: 0 !important; /* 强制生效，确保折叠后靠左 */
+}
+
+/* 顶部信息+搜索区域容器 - 核心布局调整 */
+.top-bar-container {
+    width: 98%;
+    margin: 20px auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* 适配小屏幕 */
+    gap: 15px; /* 增加间距，优化换行显示 */
+}
+
+/* 2. 职位标签样式 - 不同岗位类型区分背景色 */
+.position-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+/* 研发相关 */
+.position-rd {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+/* 人事相关 */
+.position-hr {
+    background-color: #f3e5f5;
+    color: #8e24aa;
+}
+
+/* 行政相关 */
+.position-admin {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+
+/* 销售相关 */
+.position-sales {
+    background-color: #fff3e0;
+    color: #f57c00;
+}
+
+/* 其他职位 */
+.position-other {
+    background-color: #fafafa;
+    color: #616161;
+}
+/* 左侧员工记录信息 */
+.record-info {
+    font-size: 16px; /* 放大字体 */
+    color: #444; /* 加深文字颜色 */
+    font-weight: 500;
+    padding: 10px 0;
+}
+
+.record-info span {
+    color: #2f5496; /* 调整为沉稳的深蓝色，更协调 */
+    font-weight: 600;
+    font-size: 17px; /* 突出数字字体 */
+}
+
+/* 右侧搜索区域 - 调整布局和样式 */
+.search-container {
+    padding: 15px 20px;
+    background-color: #fff;
+    border-radius: 12px; /* 更大圆角，更现代 */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* 更柔和的阴影 */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    transition: box-shadow 0.3s ease; /* 悬浮阴影过渡 */
+}
+
+.search-container:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* 悬浮增强阴影 */
+}
+
+.search-input {
+    flex: 1;
+    max-width: 300px;
+    height: 42px; /* 略微增高输入框 */
+    padding: 0 15px;
+    border: 1px solid #e0e0e0; /* 更浅的边框色 */
+    border-radius: 8px; /* 更大圆角 */
+    font-size: 15px; /* 放大字体 */
+    outline: none;
+    transition: all 0.3s ease; /* 延长过渡时间，更丝滑 */
+}
+
+.search-input:focus {
+    border-color: #2f5496; /* 匹配主题色 */
+    box-shadow: 0 0 0 3px rgba(47, 84, 150, 0.1); /* 更柔和的聚焦阴影 */
+}
+/* 5. 搜索框占位符样式优化 */
+.search-input::placeholder {
+    color: #999;
+    font-size: 14px;
+}
+
+.search-select {
+    height: 42px; /* 略微增高选择框 */
+    padding: 0 15px;
+    border: 1px solid #e0e0e0; /* 更浅的边框色 */
+    border-radius: 8px; /* 更大圆角 */
+    font-size: 15px; /* 放大字体 */
+    color: #333;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s ease; /* 延长过渡时间 */
+}
+
+.search-select:focus {
+    border-color: #2f5496; /* 匹配主题色 */
+}
+
+.search-btn {
+    height: 42px; /* 略微增高按钮 */
+    padding: 0 20px;
+    background-color: #2f5496; /* 沉稳的深蓝色主题 */
+    color: #fff;
+    border: none;
+    border-radius: 8px; /* 更大圆角 */
+    font-size: 15px; /* 放大字体 */
+    cursor: pointer;
+    transition: all 0.3s ease; /* 延长过渡时间 */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.search-btn:hover {
+    background-color: #3b67b1; /* hover 浅一点的蓝色 */
+    transform: translateY(-1px); /* 轻微上浮，增强交互感 */
+    box-shadow: 0 4px 10px rgba(47, 84, 150, 0.2); /* 增加hover阴影 */
+}
+
+/* 员工列表表格容器 - 重点美化 */
+.table-container {
+    width: 98%;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 15px; /* 更大圆角，更现代 */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06); /* 柔和的外层阴影 */
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: box-shadow 0.3s ease; /* 容器悬浮过渡 */
+}
+
+.table-container:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08); /* 悬浮增强阴影 */
+}
+
+.employee-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px; /* 放大表格字体 */
+}
+/* 3. 表格隔行变色 - 提升可读性 */
+.employee-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* 表格标题栏 - 重点美化（修改为暖色调，取消蓝色） */
+.employee-table thead {
+    /* 暖橙色渐变，替代蓝色，更温馨且亮眼 */
+    background: linear-gradient(135deg, #f79f1f 0%, #ffbe76 100%);
+    color: #fff; /* 白色文字对比 */
+    position: relative; /* 为伪元素做准备 */
+}
+
+/* 标题栏添加细微纹理，增强质感 */
+.employee-table thead::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0V0zm2 2v2h2V2H2zm0 4v2h2V6H2zm0 4v2h2v-2H2zm0 4v2h2v-2H2zm0 4v2h2v-2H2zm4 0v2h2v-2H6zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2zm-4-4v2h2v-2h-2zm0-4v2h2v-2h-2zm0-4v2h2v-2h-2zm0-4v2h2V2h-2zm4 4v2h2V6h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2zm-4-8v2h2v-2h-2zm0-4v2h2V6h-2zm0-4v2h2V2h-2zm4 8v2h2v-2h-2zm0-4v2h2V6h-2zm0-4v2h2V2h-2zm4 12v2h2v-2h-2zm0-4v2h2v-2h-2zm0-4v2h2v-2h-2zm0-4v2h2V2h-2z' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E");
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.employee-table th {
+    padding: 18px 20px; /* 增加内边距，更宽松 */
+    text-align: left;
+    font-weight: 600;
+    font-size: 16px; /* 放大标题字体 */
+    border-bottom: none; /* 移除原有边框 */
+    letter-spacing: 0.5px; /* 增加字间距提升可读性 */
+    position: relative;
+    z-index: 1; /* 确保文字在纹理上层 */
+}
+
+/* 标题栏每个th添加细微分隔线 */
+.employee-table th:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 15%;
+    height: 70%;
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.employee-table td {
+    padding: 18px 20px; /* 增加内边距，更宽松 */
+    border-bottom: 1px solid #f8f8f8; /* 更浅的分隔线 */
+    color: #555; /* 调整文字颜色 */
+    transition: all 0.2s ease; /* 单元格过渡 */
+}
+
+/* 表格行样式 - 增强动态效果 */
+.employee-table tbody tr {
+    transition: all 0.3s ease; /* 更久的过渡，更丝滑 */
+    position: relative;
+}
+
+/* 行悬浮效果：阴影+平移+背景色，层次感拉满 */
+.employee-table tbody tr:hover {
+    background-color: #fff9f0; /* 暖色调背景，匹配标题栏 */
+    transform: translateX(5px); /* 轻微右移，增强动态感 */
+    box-shadow: 0 5px 15px rgba(247, 159, 31, 0.08); /* 行悬浮阴影 */
+    z-index: 2; /* 悬浮行在上层 */
+}
+
+/* 行悬浮时，单元格文字加深 */
+.employee-table tbody tr:hover td {
+    color: #333;
+}
+
+/* 表格最后一行移除下边框 */
+.employee-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* 1. 状态标签样式优化 - 增强辨识度 */
+.status-tag {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* 在职-绿色 */
+.status-active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+/* 离职-红色 */
+.status-inactive {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+/* 休假-黄色（新增状态） */
+.status-leave {
+    background-color: #fff8e1;
+    color: #ff8f00;
+    border: 1px solid #ffe082;
+}
+
+/* 4. 操作按钮优化 - 图标+文字，增强hover效果 */
+.btn {
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px; /* 增大图标和文字间距 */
+}
+
+.edit-btn {
+    background-color: #4caf50; /* 改为绿色更符合编辑语义 */
+    color: #fff;
+}
+
+.edit-btn:hover {
+    background-color: #66bb6a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+.delete-btn {
+    background-color: #f44336;
+    color: #fff;
+}
+
+.delete-btn:hover {
+    background-color: #ef5350;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.2);
+}
+
+/* 弹窗样式 - 微调色调，增强质感 */
+.modal-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    display: none;
+    backdrop-filter: blur(2px); /* 背景模糊，增强层次感 */
+}
+
+.modal-container {
+    width: 500px;
+    background-color: #fff;
+    border-radius: 15px; /* 更大圆角 */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* 更柔和的阴影 */
+    overflow: hidden;
+    transform: scale(0.95); /* 初始缩放 */
+    opacity: 0;
+    transition: all 0.3s ease; /* 弹窗显示过渡 */
+}
+
+/* 弹窗显示时的动画 */
+.modal-mask.show .modal-container {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.modal-header {
+    padding: 16px 20px;
+    background-color: #faf6f0; /* 暖色调背景，匹配表格 */
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f0e6d6;
+}
+
+.modal-title {
+    font-size: 17px; /* 放大字体 */
+    font-weight: 600;
+    color: #2f5496; /* 主题色 */
+}
+
+.modal-close {
+    color: #999;
+    font-size: 22px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    transition: all 0.2s ease;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; /* 圆形点击区域 */
+}
+
+.modal-close:hover {
+    color: #e74c3c;
+    background-color: #f8f8f8;
+}
+
+.modal-body {
+    padding: 25px; /* 增加内边距 */
+}
+
+.form-item {
+    margin-bottom: 20px; /* 增加间距 */
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px; /* 增加间距 */
+    font-size: 15px; /* 放大字体 */
+    color: #555; /* 调整文字颜色 */
+    font-weight: 500;
+}
+
+.form-input {
+    width: 100%;
+    height: 44px; /* 增高输入框 */
+    padding: 0 15px;
+    border: 1px solid #e0e0e0; /* 更浅的边框 */
+    border-radius: 8px; /* 更大圆角 */
+    font-size: 15px; /* 放大字体 */
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    border-color: #2f5496; /* 匹配主题色 */
+    box-shadow: 0 0 0 3px rgba(47, 84, 150, 0.1);
+}
+
+.form-select {
+    width: 100%;
+    height: 44px; /* 增高选择框 */
+    padding: 0 15px;
+    border: 1px solid #e0e0e0; /* 更浅的边框 */
+    border-radius: 8px; /* 更大圆角 */
+    font-size: 15px; /* 放大字体 */
+    color: #555; /* 调整文字颜色 */
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: #2f5496; /* 匹配主题色 */
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    background-color: #faf6f0; /* 暖色调背景 */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px; /* 增大间距 */
+    border-top: 1px solid #f0e6d6;
+}
+
+.modal-cancel {
+    padding: 10px 20px; /* 增大按钮尺寸 */
+    background-color: #f5f5f5;
+    color: #666;
+    border: none;
+    border-radius: 8px; /* 更大圆角 */
+    font-size: 15px; /* 放大字体 */
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-cancel:hover {
+    background-color: #e8e8e8;
+    transform: translateY(-1px);
+}
+
+.modal-confirm {
+    padding: 10px 20px; /* 增大按钮尺寸 */
+    background-color: #2f5496; /* 主题色 */
+    color: #fff;
+    border: none;
+    border-radius: 8px; /* 更大圆角 */
+    font-size: 15px; /* 放大字体 */
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-confirm:hover {
+    background-color: #3b67b1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(47, 84, 150, 0.2);
+}
+
+.delete-modal .modal-body {
+    padding: 40px 20px; /* 增加内边距 */
+    text-align: center;
+}
+
+.delete-tip {
+    font-size: 17px; /* 放大字体 */
+    color: #555; /* 调整文字颜色 */
+    margin-bottom: 25px; /* 增加间距 */
+}
+
+.delete-icon {
+    font-size: 45px; /* 放大图标 */
+    color: #e74c3c; /* 柔和的红色 */
+    margin-bottom: 15px; /* 增加间距 */
+    transition: transform 0.3s ease;
+}
+
+.delete-modal:hover .delete-icon {
+    transform: scale(1.1); /* 悬浮轻微放大 */
+}
+
+/* 分页控件 - 核心优化（重点美化） */
+.pagination-container {
+    width: 100%;
+    padding: 20px 20px; /* 增加内边距 */
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* 暖色调渐变，匹配表格标题 */
+    background: linear-gradient(135deg, #faf6f0 0%, #fff9f0 100%);
+    border-top: 2px solid #f0e6d6; /* 匹配暖色调的分隔线 */
+    flex-wrap: wrap; /* 适配小屏幕 */
+    gap: 15px; /* 增加间距 */
+}
+
+/* 左侧每页显示条数 */
+.pagination-info:first-child {
+    font-size: 15px; /* 放大字体 */
+    color: #444; /* 加深文字颜色 */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-size-select {
+    height: 38px; /* 增高选择框 */
+    padding: 0 10px;
+    border: 1px solid #e0e0e0; /* 更浅的边框 */
+    border-radius: 8px; /* 更大圆角 */
+    font-size: 15px; /* 放大字体 */
+    color: #444; /* 加深文字颜色 */
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.page-size-select:focus {
+    border-color: #2f5496; /* 匹配主题色 */
+}
+
+/* 中间分页按钮区域 */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-btn {
+    height: 40px; /* 增高按钮 */
+    min-width: 40px; /* 增宽按钮 */
+    padding: 0 12px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0; /* 更浅的边框 */
+    border-radius: 8px; /* 更大圆角 */
+    font-size: 15px; /* 放大字体 */
+    color: #444; /* 加深文字颜色 */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: #2f5496; /* 匹配主题色 */
+    color: #2f5496;
+    background-color: #f0f5ff; /* 淡蓝色背景 */
+    transform: translateY(-1px);
+}
+
+.page-btn:disabled {
+    cursor: not-allowed;
+    color: #ccc;
+    background-color: #f8f8f8;
+    border-color: #f0f0f0;
+}
+
+.page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 增大页码间距 */
+}
+
+.page-number {
+    height: 40px; /* 增高页码按钮 */
+    width: 40px; /* 增宽页码按钮 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px; /* 更大圆角 */
+    font-size: 15px; /* 放大字体 */
+    font-weight: 500; /* 加粗字体 */
+    color: #444; /* 加深文字颜色 */
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-number:hover:not(.active) {
+    color: #2f5496; /* 匹配主题色 */
+    background-color: #f0f5ff; /* 淡蓝色背景 */
+    transform: translateY(-1px);
+}
+
+.page-number.active {
+    /* 暖橙色渐变，匹配表格标题 */
+    background: linear-gradient(135deg, #f79f1f 0%, #ffbe76 100%);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(247, 159, 31, 0.2); /* 增加阴影 */
+}
+
+/* 右侧页码信息 */
+.pagination-info:last-child {
+    font-size: 15px; /* 放大字体 */
+    color: #444; /* 加深文字颜色 */
+    font-weight: 500; /* 加粗字体 */
+}
+
+/* 适配小屏幕 */
+@media (max-width: 768px) {
+    .top-bar-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .search-container {
+        width: 100%;
+    }
+    .pagination-container {
+        justify-content: center;
+    }
+    .pagination-info:first-child,
+    .pagination-info:last-child {
+        width: 100%;
+        justify-content: center;
+    }
+}

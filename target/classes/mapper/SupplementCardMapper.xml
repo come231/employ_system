@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hkd.mapper.SupplementCardDao">
+    
+    <resultMap id="SupplementCardResultMap" type="com.hkd.pojo.SupplementCard">
+        <id column="supplement_id" property="supplementId" />
+        <result column="emp_id" property="empId" />
+        <result column="check_date" property="checkDate" />
+        <result column="check_type" property="checkType" />
+        <result column="actual_time" property="actualTime" />
+        <result column="reason" property="reason" />
+        <result column="approver_id" property="approverId" />
+        <result column="approve_status" property="approveStatus" />
+        <result column="approve_opinion" property="approveOpinion" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    
+    <select id="findAllCount" resultType="int">
+        SELECT COUNT(*) FROM supplement_card
+    </select>
+    
+    <select id="findAll" resultMap="SupplementCardResultMap">
+        SELECT * FROM supplement_card ORDER BY create_time DESC LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="findById" parameterType="int" resultMap="SupplementCardResultMap">
+        SELECT * FROM supplement_card WHERE supplement_id = #{supplementId}
+    </select>
+    
+    <select id="findCountByEmpId" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM supplement_card WHERE emp_id = #{empId}
+    </select>
+    
+    <select id="findByEmpId" resultMap="SupplementCardResultMap">
+        SELECT * FROM supplement_card WHERE emp_id = #{empId} ORDER BY create_time DESC LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="findCountByStatus" parameterType="byte" resultType="int">
+        SELECT COUNT(*) FROM supplement_card WHERE approve_status = #{approveStatus}
+    </select>
+    
+    <select id="findByApproveStatus" resultMap="SupplementCardResultMap">
+        SELECT * FROM supplement_card WHERE approve_status = #{approveStatus} ORDER BY create_time DESC LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="findCountByCheckType" parameterType="byte" resultType="int">
+        SELECT COUNT(*) FROM supplement_card WHERE check_type = #{checkType}
+    </select>
+    
+    <select id="findByCheckType" resultMap="SupplementCardResultMap">
+        SELECT * FROM supplement_card WHERE check_type = #{checkType} ORDER BY create_time DESC LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <insert id="insert" parameterType="com.hkd.pojo.SupplementCard" useGeneratedKeys="true" keyProperty="supplementId">
+        INSERT INTO supplement_card(emp_id, check_date, check_type, actual_time, reason, approver_id, approve_status, approve_opinion, create_time, update_time)
+        VALUES(#{empId}, #{checkDate}, #{checkType}, #{actualTime}, #{reason}, #{approverId}, #{approveStatus}, #{approveOpinion}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <update id="update" parameterType="com.hkd.pojo.SupplementCard">
+        UPDATE supplement_card SET
+            emp_id = #{empId},
+            check_date = #{checkDate},
+            check_type = #{checkType},
+            actual_time = #{actualTime},
+            reason = #{reason},
+            approver_id = #{approverId},
+            approve_status = #{approveStatus},
+            approve_opinion = #{approveOpinion},
+            update_time = #{updateTime}
+        WHERE supplement_id = #{supplementId}
+    </update>
+    
+    <delete id="delete" parameterType="int">
+        DELETE FROM supplement_card WHERE supplement_id = #{supplementId}
+    </delete>
+    
+    <update id="updateApproveStatus">
+        UPDATE supplement_card SET
+            approve_status = #{approveStatus},
+            approve_opinion = #{approveOpinion},
+            approver_id = #{approverId},
+            update_time = NOW()
+        WHERE supplement_id = #{supplementId}
+    </update>
+
+    <!-- 获取已审批通过的申请数量 -->
+    <select id="getApprovedCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM supplement_card WHERE approve_status = 1
+    </select>
+
+    <!-- 获取已审批（通过+驳回）的总数量 -->
+    <select id="getDecidedCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM supplement_card WHERE approve_status IN (1, 2)
+    </select>
+</mapper>

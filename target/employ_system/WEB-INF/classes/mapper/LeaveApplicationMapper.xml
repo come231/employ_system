@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hkd.mapper.LeaveApplicationDao">
+    
+    <resultMap id="LeaveApplicationResultMap" type="com.hkd.pojo.LeaveApplication">
+        <id column="leave_id" property="leaveId" />
+        <result column="emp_id" property="empId" />
+        <result column="leave_type" property="leaveType" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="leave_days" property="leaveDays" />
+        <result column="reason" property="reason" />
+        <result column="approver_id" property="approverId" />
+        <result column="approve_status" property="approveStatus" />
+        <result column="approve_opinion" property="approveOpinion" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    
+    <select id="findAll" resultMap="LeaveApplicationResultMap">
+        SELECT * FROM leave_application ORDER BY create_time DESC limit #{offset},#{pageSize}
+    </select>
+
+    <select id="findAllCount" parameterType="int">
+        SELECT count(*) from leave_application
+    </select>
+    
+    <select id="findById" parameterType="int" resultMap="LeaveApplicationResultMap">
+        SELECT * FROM leave_application WHERE leave_id = #{leaveId}
+    </select>
+    
+    <select id="findByEmpId"  resultMap="LeaveApplicationResultMap">
+        SELECT * FROM leave_application WHERE emp_id = #{empId}
+                                        ORDER BY create_time DESC limit #{offset},#{pageSize}
+    </select>
+    <select id="findCountByEmpId" parameterType="int">
+        SELECT count(*) from leave_application where emp_id=#{empId}
+    </select>
+    
+    <select id="findByApproverId"  resultMap="LeaveApplicationResultMap">
+        SELECT * FROM leave_application WHERE approver_id = #{approverId}
+    </select>
+    
+    <select id="findByApproveStatus"  resultMap="LeaveApplicationResultMap">
+        SELECT * FROM leave_application WHERE approve_status = #{approveStatus}
+                                        ORDER BY create_time DESC  limit #{offset},#{pageSize}
+    </select>
+    <select id="findCountByStatus" >
+        SELECT count(*) from leave_application where approve_status=#{status}
+    </select>
+    
+    <select id="findByLeaveType"  resultMap="LeaveApplicationResultMap">
+        SELECT * FROM leave_application WHERE leave_type = #{leaveType}
+                                        ORDER BY create_time DESC limit #{offset},#{pageSize}
+    </select>
+    <select id="findCountByLeaveType" >
+        SELECT count(*) from leave_application where leave_type=#{leaveType}
+    </select>
+    
+    <select id="findByDateRange"  resultMap="LeaveApplicationResultMap">
+        SELECT * FROM leave_application
+        <where>
+            <if test="empId!=-1">
+                 and emp_id=#{empId}
+            </if>
+            AND create_time BETWEEN #{startDate} AND #{endDate}
+            <if test="status!=-1">
+            and status=#{status}
+            </if>
+            <if test="type!=''">
+            and leave_type=#{type}
+            </if>
+        </where>
+        ORDER BY create_time
+    </select>
+    
+    <insert id="insert" parameterType="com.hkd.pojo.LeaveApplication" useGeneratedKeys="true" keyProperty="leaveId">
+        INSERT INTO leave_application(emp_id, leave_type, start_time, end_time, leave_days, reason, approver_id, approve_status, approve_opinion, create_time, update_time)
+        VALUES(#{empId}, #{leaveType}, #{startTime}, #{endTime}, #{leaveDays}, #{reason}, #{approverId}, #{approveStatus}, #{approveOpinion}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <update id="update" parameterType="com.hkd.pojo.LeaveApplication">
+        UPDATE leave_application SET
+            emp_id = #{empId},
+            leave_type = #{leaveType},
+            start_time = #{startTime},
+            end_time = #{endTime},
+            leave_days = #{leaveDays},
+            reason = #{reason},
+            approver_id = #{approverId},
+            approve_status = #{approveStatus},
+            approve_opinion = #{approveOpinion},
+            create_time=#{createTime},
+            update_time = #{updateTime}
+        WHERE leave_id = #{leaveId}
+    </update>
+    
+    <delete id="delete" parameterType="int">
+        DELETE FROM leave_application WHERE leave_id = #{leaveId}
+    </delete>
+    
+    <update id="updateApproveStatus" parameterType="map">
+        UPDATE leave_application SET
+            approve_status = #{approveStatus},
+            update_time = NOW()
+        WHERE leave_id = #{leaveId}
+    </update>
+
+    <!-- 获取已审批通过的申请数量 -->
+    <select id="getApprovedCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM leave_application WHERE approve_status = 1
+    </select>
+
+    <!-- 获取已审批（通过+驳回）的总数量 -->
+    <select id="getDecidedCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM leave_application WHERE approve_status IN (1, 2)
+    </select>
+
+    <!-- 获取平均审批时长（秒） -->
+    <select id="getAverageApprovalTimeInSeconds" resultType="java.lang.Double">
+        SELECT AVG(TIMESTAMPDIFF(SECOND, create_time, update_time))
+        FROM leave_application
+        WHERE approve_status IN (1, 2) AND update_time IS NOT NULL AND update_time > create_time
+    </select>
+</mapper>
