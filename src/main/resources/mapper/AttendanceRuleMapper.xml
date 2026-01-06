@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hkd.mapper.AttendanceRuleDao">
+
+    <resultMap id="AttendanceRuleResultMap" type="com.hkd.pojo.AttendanceRule">
+        <id column="rule_id" property="ruleId" />
+        <result column="work_start_time" property="workStartTime" />
+        <result column="work_end_time" property="workEndTime" />
+        <result column="late_threshold" property="lateThreshold" />
+        <result column="early_threshold" property="earlyThreshold" />
+        <result column="supplement_valid_hours" property="supplementValidHours" />
+        <result column="full_attendance_days" property="fullAttendanceDays" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <select id="findAll" resultMap="AttendanceRuleResultMap">
+        SELECT * FROM attendance_rule
+    </select>
+
+    <select id="findById" parameterType="int" resultMap="AttendanceRuleResultMap">
+        SELECT * FROM attendance_rule WHERE rule_id = #{ruleId}
+    </select>
+
+    <select id="findLatest" resultMap="AttendanceRuleResultMap">
+        SELECT * FROM attendance_rule ORDER BY update_time DESC LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="com.hkd.pojo.AttendanceRule" useGeneratedKeys="true" keyProperty="ruleId">
+        INSERT INTO attendance_rule(work_start_time, work_end_time, late_threshold, early_threshold, supplement_valid_hours, full_attendance_days, update_time)
+        VALUES(#{workStartTime}, #{workEndTime}, #{lateThreshold}, #{earlyThreshold}, #{supplementValidHours}, #{fullAttendanceDays}, #{updateTime})
+    </insert>
+
+    <update id="update" parameterType="com.hkd.pojo.AttendanceRule">
+        UPDATE attendance_rule SET
+            work_start_time = #{workStartTime},
+            work_end_time = #{workEndTime},
+            late_threshold = #{lateThreshold},
+            early_threshold = #{earlyThreshold},
+            supplement_valid_hours = #{supplementValidHours},
+            full_attendance_days = #{fullAttendanceDays},
+            update_time = #{updateTime}
+        WHERE rule_id = #{ruleId}
+    </update>
+
+    <delete id="delete" parameterType="int">
+        DELETE FROM attendance_rule WHERE rule_id = #{ruleId}
+    </delete>
+</mapper>

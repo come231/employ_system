@@ -1,0 +1,88 @@
+body {
+    background-color: #f5f7fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    font-family: "Microsoft Yahei", Arial, sans-serif;
+    line-height: 1.6;
+}
+/* 主内容区域样式 */
+.main-content {
+    margin-left: 280px;
+    padding: 20px 0;
+    min-height: calc(100vh - 70px);
+    background-color: #f8f9fa;
+}
+
+.footer {
+    text-align: center;
+    padding: 15px;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+    margin-left: 220px;
+    color: #666;
+    font-size: 12px;
+}
+
+/* 统计卡片样式 */
+.stat-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card-bg-primary {
+    background-color: #3498db;
+    color: #fff;
+}
+
+.card-bg-success {
+    background-color: #2ecc71;
+    color: #fff;
+}
+
+.card-bg-warning {
+    background-color: #f39c12;
+    color: #fff;
+}
+
+.card-bg-danger {
+    background-color: #e74c3c;
+    color: #fff;
+}
+
+.stat-card .card-footer {
+    background-color: rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.stat-card .card-link {
+    color: #fff;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.stat-card .card-link:hover {
+    text-decoration: underline;
+}
+
+/* 最近操作记录样式 */
+.log-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.log-item:last-child {
+    border-bottom: none;
+}
+
+.log-action {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.log-time {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 2px;
+}

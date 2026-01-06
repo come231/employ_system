@@ -1,0 +1,125 @@
+/* 侧边栏基础样式 - 匹配标题栏背景+加宽+加高选项区域 */
+.sidebar {
+    width: 280px; /* 加宽侧边栏（从240→280），比例更协调 */
+    height: calc(100vh - 70px); /* 匹配标题栏高度70px */
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* 和标题栏一致的渐变背景 */
+    border-right: 1px solid #4a5568; /* 深色边框更匹配 */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15); /* 增强阴影 */
+    /* 固定侧边栏 - 滚动时保持不动 */
+    position: fixed;
+    top: 70px; /* 紧贴标题栏下方 */
+    left: 0;
+    overflow-y: auto; /* 侧边栏内容过多时可滚动 */
+    z-index: 100;
+}
+
+/* 侧边栏菜单样式 */
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    padding-top: 10px; /* 顶部留白更美观 */
+}
+
+.sidebar-menu-item {
+    position: relative;
+    margin-bottom: 4px; /* 菜单项之间增加间距 */
+}
+
+/* 主菜单链接样式 - 大幅放大尺寸+适配深色背景 */
+.sidebar-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 18px 28px; /* 大幅增加内边距（14→18，24→28） */
+    color: #e2e8f0; /* 浅灰色文字适配深色背景 */
+    text-decoration: none;
+    font-size: 18px; /* 放大主菜单文字（16→18） */
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent; /* 加宽左侧边框（3→4） */
+    border-radius: 0 8px 8px 0; /* 右侧圆角更柔和 */
+}
+
+/* 首页激活样式 - 金黄色文字+高亮背景 */
+.sidebar-menu-link.active-parent {
+    background-color: rgba(251, 191, 36, 0.15); /* 金黄色透明背景 */
+    color: #fbbf24; /* 激活态金黄色文字 */
+    border-left-color: #fbbf24; /* 左侧金黄色高亮边框 */
+}
+
+.sidebar-menu-link:hover {
+    background-color: rgba(255, 255, 255, 0.08); /* 深色背景hover效果 */
+    color: #fef3c7; /* hover浅金黄色文字 */
+}
+
+/* 子菜单样式 - 默认隐藏+适配深色背景 */
+.sidebar-submenu {
+    display: none;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: rgba(255, 255, 255, 0.05); /* 半透明子菜单背景 */
+    border-radius: 0 8px 8px 0;
+}
+
+.sidebar-submenu.show {
+    display: block;
+}
+
+.sidebar-submenu-item {
+    padding: 0;
+    margin: 2px 0; /* 子菜单项间距 */
+}
+
+/* 子菜单链接样式 - 放大尺寸+适配深色背景 */
+.sidebar-submenu-link {
+    display: block;
+    padding: 16px 28px 16px 60px; /* 大幅增加内边距（12→16，24→28，50→60） */
+    color: #cbd5e1; /* 浅灰色子菜单文字 */
+    text-decoration: none;
+    font-size: 17px; /* 放大子菜单文字（15→17） */
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent; /* 加宽左侧边框（3→4） */
+    border-radius: 0 8px 8px 0;
+}
+
+/* 子菜单激活样式 - 金黄色文字+高亮背景 */
+.sidebar-submenu-link.active {
+    background-color: rgba(251, 191, 36, 0.15); /* 金黄色透明背景 */
+    color: #fbbf24; /* 激活态金黄色文字 */
+    border-left-color: #fbbf24; /* 左侧金黄色高亮边框 */
+    font-weight: 600; /* 激活态加粗 */
+}
+
+.sidebar-submenu-link:hover {
+    background-color: rgba(255, 255, 255, 0.08); /* 子菜单hover效果 */
+    color: #fef3c7; /* hover浅金黄色文字 */
+}
+
+/* 箭头图标样式 - 放大+适配深色背景 */
+.sidebar-menu-link .fa-angle-down,
+.sidebar-menu-link .fa-angle-up {
+    margin-left: auto;
+    font-size: 16px; /* 放大箭头（14→16） */
+    color: #94a3b8; /* 浅灰色箭头 */
+}
+
+/* 菜单图标样式 - 放大+适配深色背景 */
+.sidebar-menu-link .fa-home,
+.sidebar-menu-link .fa-users,
+.sidebar-menu-link .fa-clock-o,
+.sidebar-menu-link .fa-line-chart,
+.sidebar-menu-link .fa-cog {
+    margin-right: 16px; /* 加大图标间距（12→16） */
+    font-size: 20px; /* 放大图标（18→20） */
+    color: #94a3b8; /* 浅灰色图标 */
+}
+
+/* 激活/hover态图标颜色 - 金黄色 */
+.sidebar-menu-link.active-parent .fa-home,
+.sidebar-menu-link:hover .fa-users,
+.sidebar-menu-link:hover .fa-clock-o,
+.sidebar-menu-link:hover .fa-line-chart,
+.sidebar-menu-link:hover .fa-cog {
+    color: #fbbf24; /* 金黄色图标 */
+}

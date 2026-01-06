@@ -1,0 +1,256 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Inter", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 背景装饰 */
+body::before, body::after {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: rgba(251, 191, 36, 0.1);
+    filter: blur(80px);
+    z-index: 0;
+}
+
+body::before {
+    top: -100px;
+    right: -100px;
+}
+
+body::after {
+    bottom: -100px;
+    left: -100px;
+}
+
+/* 登录卡片 */
+.login-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 500px;
+    padding: 50px 40px;
+    position: relative;
+    z-index: 1;
+    transition: all 0.5s ease;
+}
+
+.login-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+/* 系统名称 */
+.system-name {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.system-name h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #f8fafc;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+.system-name p {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 5px 0 0 0;
+    letter-spacing: 1px;
+}
+
+/* 登录标题 */
+.login-title {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.login-title h2 {
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #fbbf24, #f97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+}
+
+.login-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #fbbf24, #f97316);
+    border-radius: 3px;
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 28px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 10px;
+    color: #e2e8f0;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.form-input {
+    width: 100%;
+    height: 54px;
+    padding: 0 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #f8fafc;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.form-input::placeholder {
+    color: #94a3b8;
+}
+
+.form-input:focus {
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 角色选择 */
+.role-select {
+    margin: 35px 0;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.role-title {
+    color: #e2e8f0;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+}
+
+.role-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.role-option:last-child {
+    margin-bottom: 0;
+}
+
+.role-option:has(input:checked) {
+    background: rgba(251, 191, 36, 0.08);
+}
+
+.role-radio {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    accent-color: #fbbf24;
+}
+
+.role-label {
+    color: #f8fafc;
+    font-size: 16px;
+    transition: color 0.2s ease;
+}
+
+.role-option:hover .role-label {
+    color: #fbbf24;
+}
+
+/* 登录按钮 */
+.login-btn {
+    width: 100%;
+    height: 56px;
+    background: linear-gradient(90deg, #fbbf24, #f97316);
+    color: #0f172a;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.2);
+}
+
+.login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+.login-btn:disabled {
+    background: #475569;
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 响应式适配 */
+@media (max-width: 520px) {
+    .login-card {
+        padding: 40px 25px;
+    }
+    .system-name h1 {
+        font-size: 18px;
+    }
+    .login-title h2 {
+        font-size: 28px;
+    }
+    .form-input {
+        height: 50px;
+        font-size: 15px;
+    }
+    .login-btn {
+        height: 52px;
+        font-size: 17px;
+    }
+    .role-select {
+        padding: 20px;
+    }
+}

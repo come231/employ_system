@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hkd.mapper.AttendanceRecordDao">
+    
+    <resultMap id="AttendanceRecordResultMap" type="com.hkd.pojo.AttendanceRecord">
+        <id column="record_id" property="recordId" />
+        <result column="emp_id" property="empId" />
+        <result column="check_date" property="checkDate" />
+        <result column="type" property="type" />
+        <result column="check_in_time" property="checkTime" />
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+    
+    <select id="findAll" resultMap="AttendanceRecordResultMap">
+        SELECT * FROM attendance_record where type=1
+                                        ORDER BY check_in_time DESC limit #{offset},#{pageSize}
+    </select>
+    
+    <select id="findById" parameterType="int" resultMap="AttendanceRecordResultMap">
+        SELECT * FROM attendance_record WHERE emp_id = #{empId} and type=1
+                                        ORDER BY check_in_time DESC limit #{offset},#{pageSize}
+    </select>
+    
+    <select id="findCountByEmpId"  parameterType="int" resultType="int">
+        SELECT count(*) FROM attendance_record WHERE emp_id = #{empId} and type=1
+    </select>
+
+    <select id="findAllCount" resultType="int">
+        SELECT count(*) from attendance_record where type=1
+    </select>
+    
+    <!-- 根据员工ID、日期范围、状态和类型查询考勤记录 -->
+    <select id="findByEmpIdAndDateRange"  resultMap="AttendanceRecordResultMap">
+        SELECT * FROM attendance_record
+        <where>
+            <if test="empId!=-1">
+                AND emp_id=#{empId}
+            </if>
+            AND check_date BETWEEN #{startDate} AND #{endDate}
+            <if test="status!=-1">
+                AND status=#{status}
+            </if>
+            <if test="type!=-1">
+                AND type=#{type}
+            </if>
+        </where>
+        ORDER BY check_date
+    </select>
+    
+    <select id="findByCheckDate" parameterType="date" resultMap="AttendanceRecordResultMap">
+        SELECT * FROM attendance_record WHERE check_date = #{checkDate}
+    </select>
+    
+    <select id="findByStatus" parameterType="byte" resultMap="AttendanceRecordResultMap">
+        SELECT * FROM attendance_record WHERE status = #{status}
+    </select>
+    
+    <select id="findByType" parameterType="byte" resultMap="AttendanceRecordResultMap">
+        SELECT * FROM attendance_record WHERE type = #{type}
+    </select>
+    
+    <insert id="insert" parameterType="com.hkd.pojo.AttendanceRecord" useGeneratedKeys="true" keyProperty="recordId">
+        INSERT INTO attendance_record(emp_id, check_date, type, check_in_time, status, remark, create_time)
+        VALUES(#{empId}, #{checkDate}, #{type}, #{checkTime}, #{status}, #{remark}, #{createTime})
+    </insert>
+
+    <update id="update" parameterType="com.hkd.pojo.AttendanceRecord">
+        UPDATE attendance_record SET
+            emp_id = #{empId},
+            check_date = #{checkDate},
+            type = #{type},
+            check_in_time = #{checkTime},
+            status = #{status},
+            remark = #{remark}
+        WHERE record_id = #{recordId}
+    </update>
+    
+    <delete id="delete" parameterType="int">
+        DELETE FROM attendance_record WHERE record_id = #{recordId}
+    </delete>
+    
+    <select id="findByEmpIdAndCheckDate" parameterType="map" resultMap="AttendanceRecordResultMap">
+        SELECT * FROM attendance_record
+        WHERE emp_id = #{empId}
+        AND check_date = #{checkDate}
+    </select>
+
+    <select id="findByDateRange" resultMap="AttendanceRecordResultMap">
+        SELECT * FROM attendance_record
+        WHERE type = 1
+        AND check_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY check_date DESC, check_in_time DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="findCountByDateRange" resultType="int">
+        SELECT COUNT(*) FROM attendance_record
+        WHERE type = 1
+        AND check_date BETWEEN #{startDate} AND #{endDate}
+    </select>
+</mapper>

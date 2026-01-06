@@ -1,0 +1,194 @@
+/* 顶部导航栏样式 - 放大尺寸+美化 */
+.top-header {
+    position: fixed; /* 固定在顶部 */
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 0 24px;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* 渐变背景更美观 */
+    color: #fff;
+    height: 70px; /* 放大标题栏高度 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 增加阴影提升层次感 */
+    z-index: 1000; /* 高于侧边栏 */
+}
+
+/* 左侧折叠侧边栏按钮 */
+.sidebar-toggle-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 16px;
+}
+
+.sidebar-toggle-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-toggle-btn i {
+    font-size: 20px; /* 放大图标 */
+    color: #fff;
+}
+
+/* 系统名称样式 - 居中+放大文字 */
+.system-name {
+    font-size: 22px; /* 放大系统名称文字 */
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1; /* 占满中间空间，实现居中 */
+    letter-spacing: 1px; /* 增加字间距更美观 */
+}
+
+.system-name i {
+    font-size: 24px; /* 放大图标 */
+    margin-right: 12px;
+    color: #3498db; /* 图标高亮色 */
+}
+
+/* 移动端菜单按钮（保留兼容） */
+.mobile-toggle {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 20px; /* 放大图标 */
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+/* 用户信息区域核心样式 - 优化尺寸 */
+#userInfo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px 16px; /* 放大内边距 */
+    border-radius: 8px; /* 圆角放大更圆润 */
+    min-width: 200px; /* 最小宽度避免挤压 */
+}
+
+#userInfo:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 用户下拉菜单样式 - 优化视觉 */
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 200px; /* 放大下拉菜单宽度 */
+    background: #fff;
+    border: 1px solid #e8eaf6;
+    border-radius: 8px; /* 圆角优化 */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); /* 增强阴影 */
+    z-index: 9999;
+    margin-top: 8px;
+    overflow: hidden; /* 防止内容溢出 */
+}
+
+.user-dropdown.show {
+    display: block;
+    animation: fadeIn 0.2s ease-in-out; /* 添加入场动画 */
+}
+
+/* 下拉菜单入场动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-dropdown a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px; /* 放大内边距 */
+    color: #2d3748;
+    text-decoration: none;
+    font-size: 15px; /* 放大文字 */
+    transition: all 0.2s ease;
+}
+
+.user-dropdown a:hover {
+    background-color: #f5f7fa;
+    color: #2b6cb0; /* hover文字变色 */
+    padding-left: 24px; /* 轻微缩进动效 */
+}
+
+.user-dropdown a i {
+    margin-right: 10px; /* 图标间距 */
+    font-size: 16px;
+    width: 18px; /* 图标宽度统一 */
+    text-align: center;
+}
+
+.user-dropdown .divider {
+    height: 1px;
+    background-color: #e8eaf6;
+    margin: 4px 0;
+}
+
+/* 侧边栏折叠后的页面适配 */
+.sidebar-hidden {
+    margin-left: 0 !important;
+}
+
+/* 主内容区域适配 - 配合固定header和sidebar */
+body {
+    padding-top: 70px; /* 为固定header留出空间 */
+}
+
+.main-content {
+    transition: margin-left 0.3s ease;
+    margin-left: 280px; /* 对应侧边栏宽度280px */
+}
+
+.main-content.expand {
+    margin-left: 0;
+}
+
+/* 进入前台按钮样式 */
+.go-frontend-btn {
+    display: flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #f79f1f 0%, #f39c12 100%);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-right: 20px;
+    box-shadow: 0 2px 8px rgba(247, 159, 31, 0.3);
+}
+
+.go-frontend-btn:hover {
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(247, 159, 31, 0.4);
+    color: #fff;
+    text-decoration: none;
+}
+
+.go-frontend-btn i {
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.go-frontend-btn span {
+    white-space: nowrap;
+}

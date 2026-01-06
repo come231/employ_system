@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hkd.mapper.SysUserDao">
+
+    <resultMap id="SysUserResultMap" type="com.hkd.pojo.SysUser">
+        <id column="user_id" property="userId" />
+        <result column="emp_id" property="empId" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="avatar" property="avatar" />
+        <result column="status" property="status" />
+        <result column="last_login_time" property="lastLoginTime" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <select id="findAll" resultMap="SysUserResultMap">
+        SELECT * FROM sys_user
+    </select>
+
+    <select id="findById" parameterType="int" resultMap="SysUserResultMap">
+        SELECT * FROM sys_user WHERE user_id = #{userId}
+    </select>
+
+    <select id="findByUsername" parameterType="string" resultMap="SysUserResultMap">
+        SELECT * FROM sys_user WHERE username = #{username}
+    </select>
+
+    <select id="findByEmpId" parameterType="int" resultMap="SysUserResultMap">
+        SELECT * FROM sys_user WHERE emp_id = #{empId}
+    </select>
+
+    <insert id="insert" parameterType="com.hkd.pojo.SysUser" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO sys_user(emp_id, username, password, avatar, status, last_login_time, create_time)
+        VALUES(#{empId}, #{username}, #{password}, #{avatar}, #{status}, #{lastLoginTime}, #{createTime})
+    </insert>
+
+    <update id="update" parameterType="com.hkd.pojo.SysUser">
+        UPDATE sys_user SET
+            emp_id = #{empId},
+            username = #{username},
+            password = #{password},
+            avatar = #{avatar},
+            status = #{status},
+            last_login_time = #{lastLoginTime}
+        WHERE user_id = #{userId}
+    </update>
+
+    <delete id="delete" parameterType="int">
+        DELETE FROM sys_user WHERE user_id = #{userId}
+    </delete>
+
+    <select id="findByStatus" parameterType="byte" resultMap="SysUserResultMap">
+        SELECT * FROM sys_user WHERE status = #{status}
+    </select>
+
+    <update id="updateLastLoginTime">
+        UPDATE sys_user SET
+            last_login_time = #{lastLoginTime}
+        WHERE user_id = #{userId}
+    </update>
+</mapper>
