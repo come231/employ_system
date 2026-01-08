@@ -165,7 +165,7 @@ public class UserProfileController {
             if (!".jpg".equals(suffix) && !".jpeg".equals(suffix) && !".png".equals(suffix) && !".gif".equals(suffix)) {
                 return JsonUtil.buildFalseJson(400, "只支持jpg、jpeg、png、gif格式的图片");
             }
-            // 图片大小校验（2MB）
+            // 图片大小校验（4MB）
             if (file.getSize() > 4 * 1024 * 1024) {
                 return JsonUtil.buildFalseJson(400, "图片大小不能超过4MB");
             }

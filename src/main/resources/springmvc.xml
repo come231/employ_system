@@ -15,7 +15,9 @@
 
     <!-- 开启SpringMVC注解驱动 -->
     <mvc:annotation-driven>
+<!--        消息转换器配置-->
         <mvc:message-converters>
+<!--            处理字符串类型的响应，指定UTF-8编码-->
             <bean class="org.springframework.http.converter.StringHttpMessageConverter">
                 <property name="supportedMediaTypes">
                     <list>
@@ -24,6 +26,7 @@
                     </list>
                 </property>
             </bean>
+<!--            处理JSON格式数据的序列化/反序列化-->
             <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
                 <property name="supportedMediaTypes">
                     <list>
