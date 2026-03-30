@@ -42,6 +42,8 @@ public interface AttendanceRecordService {
     // 根据员工ID和日期查询考勤记录
     AttendanceRecord findByEmpIdAndCheckDate(Integer empId, Date checkDate);
 
+    // 新增：获取本月所有考勤
+    List<AttendanceRecord> getMonthAttendance(Integer empId);
     // 根据日期范围查询考勤记录
     List<AttendanceRecord> findByDateRange(String startDate, String endDate, int offset, int pageSize);
 

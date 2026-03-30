@@ -31,6 +31,13 @@ public interface AttendanceRecordDao {
     // 根据员工ID和打卡日期查询考勤记录
     AttendanceRecord findByEmpIdAndCheckDate(Integer empId, Date checkDate);
 
+    // 新增：根据 empId + 月份 查询本月所有考勤记录
+    List<AttendanceRecord> findMonthRecordsByEmpId(
+            @Param("empId") Integer empId,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate
+    );
+
     // 新增考勤记录
     int insert(AttendanceRecord attendanceRecord);
 

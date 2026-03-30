@@ -69,7 +69,24 @@
   </dependency>
 
 
-
+    <!-- JWT -->
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-api</artifactId>
+      <version>0.11.5</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-impl</artifactId>
+      <version>0.11.5</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-jackson</artifactId>
+      <version>0.11.5</version>
+      <scope>runtime</scope>
+    </dependency>
 
   <dependency>
     <groupId>javax.servlet</groupId>
@@ -97,6 +114,17 @@
     <artifactId>log4j-core</artifactId>
     <version>2.20.0</version>
   </dependency>
+
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi</artifactId>
+      <version>4.1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>4.1.2</version>
+    </dependency>
   <dependency>
     <groupId>javax.servlet.jsp.jstl</groupId>
     <artifactId>jstl-api</artifactId>
@@ -112,6 +140,59 @@
     <artifactId>gson</artifactId>
     <version>2.10.1</version>
   </dependency>
+
+    <!-- Redis 客户端 -->
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>2.9.3</version>
+    </dependency>
+
+    <!-- Spring AMQP 新版（支持 @RabbitListener 自动创建队列） -->
+    <dependency>
+      <groupId>org.springframework.amqp</groupId>
+      <artifactId>spring-rabbit</artifactId>
+      <version>2.3.10</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.amqp</groupId>
+      <artifactId>spring-amqp</artifactId>
+      <version>2.3.10</version>
+    </dependency>
+
+    <!-- RabbitMQ 客户端 -->
+    <dependency>
+      <groupId>com.rabbitmq</groupId>
+      <artifactId>amqp-client</artifactId>
+      <version>5.12.0</version>
+    </dependency>
+
+    <!-- 必须加：Spring Messaging（消息核心包） -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-messaging</artifactId>
+      <version>5.3.28</version>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.42</version>
+    </dependency>
+
+    <!-- 必加，否则不能解析 -->
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+      <version>1.2.83</version>
+    </dependency>
+
+    <!-- Spring Data Redis -->
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-redis</artifactId>
+      <version>2.1.8.RELEASE</version>
+    </dependency>
 
   <!-- MyBatis -->
   <dependency>
@@ -160,6 +241,8 @@
   </dependencies>
   <build>
     <finalName>employ_system</finalName>
+
+
   </build>
 
 </project>

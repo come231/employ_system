@@ -155,6 +155,7 @@
             </div>
 
             <!-- 打卡按钮 -->
+            <!-- 打卡按钮 -->
             <section class="bg-white rounded-xl shadow-card p-6 card-transition">
                 <h2 class="text-xl font-bold text-dark mb-6 flex items-center">
                     <i class="fa-solid fa-clipboard-check text-success mr-2"></i>
@@ -163,8 +164,10 @@
                 <div class="flex justify-center">
                     <button id="punchBtn" class="bg-success hover:bg-success/90 text-white rounded-full w-48 h-48 md:w-60 md:h-60 flex flex-col items-center justify-center transition-all shadow-lg hover:shadow-xl">
                         <i class="fa-solid fa-clock text-3xl mb-3"></i>
-                        <span id="countdown" class="text-xl font-bold">00:00:00</span>
-                        <span class="text-sm mt-2">距离打卡结束</span>
+                        <div class="countdown-area">
+                            <span id="countdownTip">加载中...</span>
+                            <span id="countdown" class="text-2xl font-bold text-primary ml-2">--:--:--</span>
+                        </div>
                     </button>
                 </div>
                 <div class="flex justify-center mt-4 text-secondary text-sm" id="punch-status">

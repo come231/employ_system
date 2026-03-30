@@ -11,6 +11,9 @@ import com.hkd.service.SysOperationLogService;
 import com.hkd.util.BCryptUtil;
 import com.hkd.util.CommonUtil;
 import com.hkd.util.JsonUtil;
+import com.hkd.util.RedisUtil;
+import com.hkd.util.TokenUtil;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,18 +35,22 @@ public class ReceptionLoginController {
 
     @Autowired
     private SysUserDao sysUserDao;
-
     @Autowired
     private EmpInfoDao empInfoDao;
-
     @Autowired
     private SysDeptDao sysDeptDao;
-
     @Autowired
     private SysOperationLogService sysOperationLogService;
+    @Autowired
+    private RedisUtil redisUtil;
+    @Autowired
+    private TokenUtil tokenUtil;
+
+    // 过期时间配置
+    private static final long REFRESH_TOKEN_EXPIRE = 7 * 24 * 60 * 60; // 7天
 
     /**
-     * 员工/部门主管登录
+     * 员工/部门主管登录（带双Token）
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
@@ -66,16 +72,13 @@ public class ReceptionLoginController {
             if (!BCryptUtil.checkPassword(password, sysUser.getPassword())) {
                 return JsonUtil.buildFalseJson(401, "密码错误！");
             }
-//            if(!sysUser.getPassword().equals(password)){
-//                return JsonUtil.buildFalseJson(401, "密码错误！");
-//            }
 
             // 检查用户状态
             if (sysUser.getStatus() != null && sysUser.getStatus() == 0) {
                 return JsonUtil.buildFalseJson(403, "账号已被禁用！");
             }
 
-            // 检查是否关联员工信息（前台用户必须关联员工）
+            // 检查是否关联员工信息
             if (CommonUtil.isEmpty(sysUser.getEmpId())) {
                 return JsonUtil.buildFalseJson(403, "该账号不是员工账号，请使用后台管理系统登录！");
             }
@@ -97,7 +100,7 @@ public class ReceptionLoginController {
                 return JsonUtil.buildFalseJson(404, "部门信息不存在！");
             }
 
-            // 判断是否为部门主管
+            // 判断角色
             String role = "employee";
             if (sysDept.getManagerId() != null && sysDept.getManagerId().equals(empInfo.getEmpId())) {
                 role = "manager";
@@ -106,9 +109,19 @@ public class ReceptionLoginController {
             // 更新最后登录时间
             sysUserDao.updateLastLoginTime(sysUser.getUserId(), new Date());
 
-            // 设置session属性
+            // ====================== 生成双令牌 ======================
+            Integer userId = sysUser.getUserId();
+            String accessToken = tokenUtil.generateToken(String.valueOf(userId));
+            String refreshToken = tokenUtil.generateRefreshToken(userId);
+
+            // 存入Redis
+//            redisUtil.set(TokenUtil.ACCESS_TOKEN_PREFIX + accessToken, userId, ACCESS_TOKEN_EXPIRE);
+            //刷新令牌
+            redisUtil.set(TokenUtil.REFRESH_TOKEN_PREFIX + refreshToken, userId, REFRESH_TOKEN_EXPIRE);
+
+            // ====================== Session设置 ======================
             session.setAttribute("user", sysUser);
-            session.setAttribute("receptionUserId", sysUser.getUserId());
+            session.setAttribute("receptionUserId", userId);
             session.setAttribute("receptionUsername", sysUser.getUsername());
             session.setAttribute("receptionEmpId", empInfo.getEmpId());
             session.setAttribute("receptionEmpNo", empInfo.getEmpNo());
@@ -120,25 +133,23 @@ public class ReceptionLoginController {
             session.setAttribute("receptionPhone", empInfo.getPhone());
             session.setAttribute("receptionEmail", empInfo.getEmail());
             session.setAttribute("receptionStatus", empInfo.getStatus());
-            session.setAttribute("receptionUser", sysUser);
+            session.setAttribute("accessToken", accessToken);
+            session.setAttribute("refreshToken", refreshToken);
 
             // 记录登录日志
             logLoginSuccess(sysUser, empInfo, role);
 
-            // 构建返回数据
+            System.out.println("blacklist:"+accessToken);
+            // ====================== 返回数据（带Token） ======================
             Map<String, Object> data = new HashMap<>();
-            data.put("userId", sysUser.getUserId());
+            data.put("userId", userId);
             data.put("username", sysUser.getUsername());
             data.put("empId", empInfo.getEmpId());
-            data.put("empNo", empInfo.getEmpNo());
             data.put("empName", empInfo.getEmpName());
-            data.put("deptId", empInfo.getDeptId());
             data.put("deptName", sysDept.getDeptName());
             data.put("role", role);
-            data.put("avatar", sysUser.getAvatar());
-            data.put("phone", empInfo.getPhone());
-            data.put("email", empInfo.getEmail());
-            data.put("status", empInfo.getStatus());
+            data.put("accessToken", accessToken);
+            data.put("refreshToken", refreshToken);
 
             return JsonUtil.objectToJson(data, "登录成功！");
 
@@ -164,15 +175,10 @@ public class ReceptionLoginController {
             data.put("userId", session.getAttribute("receptionUserId"));
             data.put("username", session.getAttribute("receptionUsername"));
             data.put("empId", session.getAttribute("receptionEmpId"));
-            data.put("empNo", session.getAttribute("receptionEmpNo"));
             data.put("empName", session.getAttribute("receptionEmpName"));
-            data.put("deptId", session.getAttribute("receptionDeptId"));
             data.put("deptName", session.getAttribute("receptionDeptName"));
             data.put("role", session.getAttribute("receptionRole"));
             data.put("avatar", session.getAttribute("receptionAvatar"));
-            data.put("phone", session.getAttribute("receptionPhone"));
-            data.put("email", session.getAttribute("receptionEmail"));
-            data.put("status", session.getAttribute("receptionStatus"));
 
             Map<String, Object> result = new HashMap<>();
             result.put("code", 200);
@@ -185,22 +191,40 @@ public class ReceptionLoginController {
             return JsonUtil.buildFalseJson(500, e.getMessage());
         }
     }
-
     /**
-     * 退出登录
+     * 退出登录（删除accessToken，refreshToken拉入黑名单）
      */
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     @ResponseBody
     public String logout(HttpSession session) {
         try {
-            // 记录退出日志
-            Object username = session.getAttribute("receptionUsername");
-            Object empName = session.getAttribute("receptionEmpName");
-            if (username != null) {
-                logLogout(username.toString(), empName != null ? empName.toString() : "");
+            String accessToken = (String) session.getAttribute("accessToken");
+            String refreshToken = (String) session.getAttribute("refreshToken");
+            String username = (String) session.getAttribute("receptionUsername");
+            String empName = (String) session.getAttribute("receptionEmpName");
+
+            //1.添加未过期token到redis黑名单
+            if(accessToken!=null){
+                Claims claims = TokenUtil.getClaims(accessToken);
+                if (claims != null){
+                    // 剩余过期时间
+                    long expire = claims.getExpiration().getTime() - System.currentTimeMillis();
+                    redisUtil.addBlackList(accessToken, expire);
+                }
+
             }
 
-            // 销毁session
+            // 2. 删除刷新令牌 refreshToken
+            if (refreshToken != null) {
+                String blackKey = TokenUtil.REFRESH_TOKEN_PREFIX + refreshToken;
+                redisUtil.del(blackKey);
+            }
+
+            // 记录日志
+            if (username != null) {
+                logLogout(username, empName);
+            }
+            //销毁当前会话
             session.invalidate();
             return JsonUtil.objectToJson("", "退出成功！");
 
@@ -210,9 +234,6 @@ public class ReceptionLoginController {
         }
     }
 
-    /**
-     * 记录登录成功日志
-     */
     private void logLoginSuccess(SysUser user, EmpInfo empInfo, String role) {
         try {
             SysOperationLog log = new SysOperationLog();
@@ -230,9 +251,6 @@ public class ReceptionLoginController {
         }
     }
 
-    /**
-     * 记录退出登录日志
-     */
     private void logLogout(String username, String empName) {
         try {
             SysOperationLog log = new SysOperationLog();

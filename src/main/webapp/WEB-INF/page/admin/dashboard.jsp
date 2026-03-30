@@ -5,30 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理员控制台 - 考勤管理系统</title>
-    <!-- 引入外部CDN资源 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- 引入Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- 全部换成国内 CDN（解决超时！） -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
-    <!-- 引入拆分后的样式文件 -->
     <link href="${pageContext.request.contextPath}/static/css/admin/common/common.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/static/css/admin/header.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/static/css/admin/sidebar.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/static/css/admin/dashboard.css" rel="stylesheet">
 </head>
 <body>
-<!-- 引入顶部标题栏 -->
 <jsp:include page="common/header.jsp"></jsp:include>
-
-<!-- 引入侧边栏菜单 -->
 <jsp:include page="common/sidebar.jsp">
     <jsp:param name="currentPage" value="dashboard"/>
 </jsp:include>
 
-<!-- 主内容区域 -->
 <div class="main-content">
-    <!-- 欢迎信息 -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card welcome-card">
@@ -42,7 +34,6 @@
         </div>
     </div>
 
-    <!-- 动态统计卡片 -->
     <div class="row mb-4">
         <div class="col-md-3 col-sm-6">
             <div class="card stat-card card-bg-primary mb-3">
@@ -126,7 +117,6 @@
         </div>
     </div>
 
-    <!-- 待审批卡片区域 -->
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card" style="border-left: 4px solid #f59e0b;">
@@ -166,7 +156,6 @@
         </div>
     </div>
 
-    <!-- 部门主管待审批卡片区域 -->
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card" style="border-left: 4px solid #ec4899;">
@@ -206,9 +195,7 @@
         </div>
     </div>
 
-    <!-- 图表和最近记录 -->
     <div class="row">
-        <!-- 本月考勤统计折线图 -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
@@ -221,7 +208,6 @@
                 </div>
             </div>
         </div>
-        <!-- 今日考勤饼图 -->
         <div class="col-md-3">
             <div class="card">
                 <div class="card-header">
@@ -234,7 +220,6 @@
                 </div>
             </div>
         </div>
-        <!-- 最近操作记录（真实数据） -->
         <div class="col-md-3">
             <div class="card">
                 <div class="card-header">
@@ -254,22 +239,18 @@
     </div>
 </div>
 
-<!-- 页脚 -->
 <footer class="footer">
     <span>© 2025 员工考勤管理系统 - 版权所有</span>
 </footer>
 
-<!-- 引入外部JS CDN -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- 全局上下文路径 -->
+<script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
     window.baseUrl = "${pageContext.request.contextPath}";
 </script>
 
-<!-- 引入公共JS（工具函数） -->
 <script src="${pageContext.request.contextPath}/static/js/admin/common/common.js"></script>
-<!-- 引入仪表盘主内容JS -->
 <script src="${pageContext.request.contextPath}/static/js/admin/dashboard.js"></script>
+
 </body>
 </html>

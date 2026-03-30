@@ -3,7 +3,8 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:tx="http://www.springframework.org/schema/tx"
-       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context
@@ -11,15 +12,45 @@
        http://www.springframework.org/schema/tx
        http://www.springframework.org/schema/tx/spring-tx.xsd
        http://www.springframework.org/schema/aop
-       http://www.springframework.org/schema/aop/spring-aop.xsd">
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/rabbit
+      http://www.springframework.org/schema/rabbit/spring-rabbit.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
     <!-- 开启注解扫描 -->
     <context:component-scan base-package="com.hkd">
         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
 
-    <!-- 引入数据库配置文件 -->
-    <context:property-placeholder location="classpath:db.properties"/>
+
+    <context:property-placeholder location="classpath:db.properties,classpath:redis.properties"/>
+
+    <!-- Jedis 连接池配置 -->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${redis.maxTotal}"/>
+        <property name="maxIdle" value="${redis.maxIdle}"/>
+        <property name="maxWaitMillis" value="${redis.maxWaitMillis}"/>
+        <property name="testOnBorrow" value="${redis.testOnBorrow}"/>
+    </bean>
+
+    <!-- Jedis 连接工厂 -->
+    <bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+        <property name="hostName" value="${redis.host}"/>
+        <property name="port" value="${redis.port}"/>
+        <property name="password" value="${redis.password}"/>
+        <property name="database" value="${redis.database}"/>
+        <property name="poolConfig" ref="jedisPoolConfig"/>
+    </bean>
+
+    <!-- RedisTemplate 模板 -->
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+        <property name="connectionFactory" ref="jedisConnectionFactory"/>
+        <property name="keySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+        </property>
+        <property name="valueSerializer">
+            <bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer"/>
+        </property>
+    </bean>
 
     <!-- 配置数据源 - 使用Druid连接池 -->
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
@@ -81,5 +112,47 @@
         </property>
     </bean>
 
-</beans>
+    <!-- ============================================
+         RabbitMQ 正确配置（可正常使用、监听、收消息）
+         ============================================ -->
+    <rabbit:connection-factory id="connectionFactory"
+                               host="localhost"
+                               port="5672"
+                               username="guest"
+                               password="guest"
+    />
 
+    <rabbit:admin id="rabbitAdmin" connection-factory="connectionFactory"/>
+
+    <rabbit:template id="rabbitTemplate" connection-factory="connectionFactory"/>
+
+    <!-- 队列 -->
+    <rabbit:queue id="punch.queue" name="punch.queue" durable="true"/>
+    <rabbit:queue id="notice.queue" name="notice.queue" durable="true"/>
+
+    <!-- 交换机 -->
+    <rabbit:direct-exchange id="punch.exchange" name="punch.exchange">
+        <rabbit:bindings>
+            <rabbit:binding queue="punch.queue" key="punch.route"/>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+    <rabbit:direct-exchange id="notice.exchange" name="notice.exchange">
+        <rabbit:bindings>
+            <rabbit:binding queue="notice.queue" key="notice.route"/>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+    <!-- work工作模式（一个队列，多个消费者）监听（正常启动，可用！） --><!-- 公平分发：谁闲谁消费 --><!-- 核心！启动 3 个消费者 -->
+    <rabbit:listener-container
+            connection-factory="connectionFactory"
+            acknowledge="manual"
+            auto-startup="true"
+            prefetch="1"
+            concurrency="3"
+            max-concurrency="5" > <!-- 最大 5 个 -->
+        <rabbit:listener ref="punchConsumer" queue-names="punch.queue"/>
+        <rabbit:listener ref="noticeConsumer" queue-names="notice.queue"/>
+    </rabbit:listener-container>
+
+</beans>

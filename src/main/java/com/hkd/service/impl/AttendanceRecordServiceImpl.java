@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -70,6 +71,25 @@ public class AttendanceRecordServiceImpl implements AttendanceRecordService {
     @Override
     public AttendanceRecord findByEmpIdAndCheckDate(Integer empId, Date checkDate) {
         return attendanceRecordDao.findByEmpIdAndCheckDate(empId, checkDate);
+    }
+
+    // ===================== 核心：获取本月考勤 =====================
+    @Override
+    public List<AttendanceRecord> getMonthAttendance(Integer empId) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        Date startDate = cal.getTime(); // 月初
+
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        Date endDate = cal.getTime(); // 月末
+
+        return attendanceRecordDao.findMonthRecordsByEmpId(empId, startDate, endDate);
     }
 
     @Override

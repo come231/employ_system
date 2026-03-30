@@ -87,6 +87,14 @@
         AND check_date = #{checkDate}
     </select>
 
+    <!--  ===================== 本月考勤记录（按员工+月份） ===================== -->
+    <select id="findMonthRecordsByEmpId" resultMap="AttendanceRecordResultMap">
+        SELECT * FROM attendance_record
+        WHERE emp_id = #{empId}
+          AND check_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY check_date ASC
+    </select>
+
     <select id="findByDateRange" resultMap="AttendanceRecordResultMap">
         SELECT * FROM attendance_record
         WHERE type = 1

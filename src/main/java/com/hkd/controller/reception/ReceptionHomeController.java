@@ -1,25 +1,30 @@
 package com.hkd.controller.reception;
 
+import com.hkd.dto.NoticeMessage;
+import com.hkd.dto.PunchMessage;
 import com.hkd.mapper.*;
 import com.hkd.pojo.*;
-import com.hkd.service.LeaveApplicationService;
-import com.hkd.service.SupplementCardService;
+import com.hkd.service.AttendanceRecordService;
 import com.hkd.util.CommonUtil;
 import com.hkd.util.JsonUtil;
-import com.hkd.util.PageQuery;
+import com.hkd.util.RedisUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.net.URLEncoder;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.*;
 
 /**
@@ -31,6 +36,9 @@ public class ReceptionHomeController {
 
     @Autowired
     private AttendanceRecordDao attendanceRecordDao;
+
+    @Autowired
+    private AttendanceRecordService attendanceRecordService;
 
     @Autowired
     private LeaveApplicationDao leaveApplicationDao;
@@ -55,6 +63,13 @@ public class ReceptionHomeController {
 
     @Autowired
     private SysUserRoleDao sysUserRoleDao;
+
+    @Autowired
+    private RedisUtil redisUtil;
+
+    // 注入 rabbitTemplate
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 获取首页汇总数据
@@ -81,7 +96,7 @@ public class ReceptionHomeController {
             LocalDate monthStart = now.withDayOfMonth(1);
             List<AttendanceRecord> monthRecords = attendanceRecordDao.findByEmpIdAndDateRange(
                     empId, monthStart, now, -1, 1);
-            System.out.println("数据："+monthRecords);
+            System.out.println("数据：" + monthRecords);
             int totalDays = now.getDayOfMonth();
             int attendedDays = monthRecords != null ? monthRecords.size() : 0;
             double attendanceRate = totalDays > 0 ? (attendedDays * 100.0 / totalDays) : 0;
@@ -328,6 +343,7 @@ public class ReceptionHomeController {
 
     /**
      * 查找超级管理员的员工ID
+     *
      * @return 超级管理员的empId，如果未找到返回null
      */
     private Integer findSuperAdminEmpId() {
@@ -351,6 +367,7 @@ public class ReceptionHomeController {
 
     /**
      * 查找超级管理员的userId（用于发送通知）
+     *
      * @return 超级管理员的userId，如果未找到返回null
      */
     private Integer findSuperAdminUserId() {
@@ -367,6 +384,7 @@ public class ReceptionHomeController {
 
     /**
      * 查找员工所在部门主管的userId
+     *
      * @param empId 员工ID
      * @return 部门主管的userId，如果未找到返回null
      */
@@ -397,10 +415,11 @@ public class ReceptionHomeController {
 
     /**
      * 发送通知
-     * @param userId 接收通知的用户ID
-     * @param type 通知类型
-     * @param title 通知标题
-     * @param content 通知内容
+     *
+     * @param userId    接收通知的用户ID
+     * @param type      通知类型
+     * @param title     通知标题
+     * @param content   通知内容
      * @param relatedId 关联ID
      */
     private void sendNotification(Integer userId, String type, String title, String content, Integer relatedId) {
@@ -408,15 +427,32 @@ public class ReceptionHomeController {
             if (userId == null || sysNotificationDao == null) {
                 return;
             }
-            SysNotification notification = new SysNotification();
-            notification.setUserId(userId);
-            notification.setType(type);
-            notification.setTitle(title);
-            notification.setContent(content);
-            notification.setRelatedId(relatedId != null ? relatedId : 0);
-            notification.setIsRead((byte) 0);
-            notification.setCreateTime(new Date());
-            sysNotificationDao.insert(notification);
+//            SysNotification notification = new SysNotification();
+//            notification.setUserId(userId);
+//            notification.setType(type);
+//            notification.setTitle(title);
+//            notification.setContent(content);
+//            notification.setRelatedId(relatedId != null ? relatedId : 0);
+//            notification.setIsRead((byte) 0);
+//            notification.setCreateTime(new Date());
+            //sysNotificationDao.insert(notification);
+            NoticeMessage msg = new NoticeMessage();
+            msg.setUserId(userId);
+            msg.setType(type);
+            msg.setTitle(title);
+            msg.setContent(content);
+            msg.setRelatedId(relatedId);
+            // 原来的代码
+// rabbitTemplate.convertAndSend(..., msg);
+
+// 改成 JSON 字符串发送（SSM 最稳）
+            String json = com.alibaba.fastjson.JSON.toJSONString(msg);
+            rabbitTemplate.convertAndSend(
+                    "notice.exchange",   // 正确
+                    "notice.route",      // 正确
+                    json
+            );
+
         } catch (Exception e) {
             // 通知发送失败不影响主流程
             e.printStackTrace();
@@ -430,10 +466,10 @@ public class ReceptionHomeController {
         if (CommonUtil.isEmpty(dateStr)) return null;
 
         String[] patterns = {
-            "yyyy-MM-dd'T'HH:mm",
-            "yyyy-MM-dd HH:mm:ss",
-            "yyyy-MM-dd HH:mm",
-            "yyyy-MM-dd"
+                "yyyy-MM-dd'T'HH:mm",
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd HH:mm",
+                "yyyy-MM-dd"
         };
 
         for (String pattern : patterns) {
@@ -448,7 +484,7 @@ public class ReceptionHomeController {
     }
 
     /**
-     * 打卡接口 - 根据考勤规则判断打卡状态
+     * 打卡接口 - 根据时间自动区分上班/下班打卡（<12点上班，≥12点下班）
      */
     @RequestMapping(value = "/punch", method = RequestMethod.POST)
     @ResponseBody
@@ -459,13 +495,29 @@ public class ReceptionHomeController {
                 return JsonUtil.buildFalseJson(401, "未登录！");
             }
 
-            // 检查今日是否已打卡
+            // 获取当前时间
+            Calendar cal = Calendar.getInstance();
+            int currentHour = cal.get(Calendar.HOUR_OF_DAY);
+            int currentMinute = cal.get(Calendar.MINUTE);
+            int currentTotalMinutes = currentHour * 60 + currentMinute;
             LocalDate today = LocalDate.now();
-            List<AttendanceRecord> todayRecords = attendanceRecordDao.findByEmpIdAndDateRange(
-                    empId, today, today, -1, 1);
 
-            if (todayRecords != null && !todayRecords.isEmpty()) {
-                return JsonUtil.buildFalseJson(400, "今日已打卡！");
+            // ============= 核心修改：自动判断上班/下班 =============
+            int punchType; // 1=上班 0=下班
+            String punchTypeName;
+            if (currentHour < 12) {
+                punchType = 1;
+                punchTypeName = "上班";
+            } else {
+                punchType = 0;
+                punchTypeName = "下班";
+            }
+
+            // 检查今日是否已打过【当前类型】的卡（上班/下班分开判断）
+            List<AttendanceRecord> todayTypeRecords = attendanceRecordDao.findByEmpIdAndDateRange(
+                    empId, today, today, -1, punchType);
+            if (todayTypeRecords != null && !todayTypeRecords.isEmpty()) {
+                return JsonUtil.buildFalseJson(400, "今日" + punchTypeName + "已打卡！");
             }
 
             // 获取考勤规则
@@ -474,59 +526,103 @@ public class ReceptionHomeController {
                 return JsonUtil.buildFalseJson(500, "未配置考勤规则！");
             }
 
-            // 获取当前时间
-            Calendar cal = Calendar.getInstance();
-            int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-            int currentMinute = cal.get(Calendar.MINUTE);
-            int currentTotalMinutes = currentHour * 60 + currentMinute;
-
-            // 解析上班时间
-            Time workStartTime = rule.getWorkStartTime();
-            int workStartHour = workStartTime.getHours();
-            int workStartMinute = workStartTime.getMinutes();
-            int workStartTotalMinutes = workStartHour * 60 + workStartMinute;
-
-            // 迟到阈值（分钟）
-            int lateThreshold = rule.getLateThreshold() != null ? rule.getLateThreshold() : 15;
-            int lateLimitMinutes = workStartTotalMinutes + lateThreshold;
-
-            // 判断打卡状态
-            // 超过迟到阈值，不能打卡
-            if (currentTotalMinutes > lateLimitMinutes) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("canPunch", false);
-                data.put("status", 3); // 缺勤
-                data.put("message", "已超过打卡时间（" + String.format("%02d:%02d", workStartHour, workStartMinute) + " + " + lateThreshold + "分钟），请申请补卡！");
-                return JsonUtil.buildFalseJson(400, "已超过打卡时间，只能申请补卡！");
-            }
-
             // 创建打卡记录
             AttendanceRecord record = new AttendanceRecord();
             record.setEmpId(empId);
             record.setCheckDate(java.sql.Date.valueOf(today));
-            record.setType(1); // 上班打卡
+            record.setType(punchType); // 自动设置打卡类型
             record.setCheckInTime(new Date());
             record.setCreateTime(new Date());
+            String msg = "";
 
-            // 判断是否迟到
-            if (currentTotalMinutes > workStartTotalMinutes) {
-                // 超过上班时间但在阈值内，算迟到
-                record.setStatus((byte) 1); // 迟到
-                record.setRemark("迟到打卡（迟到" + (currentTotalMinutes - workStartTotalMinutes) + "分钟）");
-            } else {
-                // 在上班时间前，正常打卡
-                record.setStatus((byte) 0); // 正常
-                record.setRemark("正常打卡");
+            // ============= 上班打卡逻辑（完全保留你原来的代码）=============
+            if (punchType == 1) {
+                // 解析上班时间
+                Time workStartTime = rule.getWorkStartTime();
+                int workStartHour = workStartTime.getHours();
+                int workStartMinute = workStartTime.getMinutes();
+                int workStartTotalMinutes = workStartHour * 60 + workStartMinute;
+
+                // 迟到阈值
+                int lateThreshold = rule.getLateThreshold() != null ? rule.getLateThreshold() : 15;
+                int lateLimitMinutes = workStartTotalMinutes + lateThreshold;
+
+                // 超过迟到阈值，不能打卡
+                if (currentTotalMinutes > lateLimitMinutes) {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("canPunch", false);
+                    data.put("status", 3);
+                    data.put("message", "已超过上班打卡时间，请申请补卡！");
+                    return JsonUtil.buildFalseJson(400, "已超过打卡时间，只能申请补卡！");
+                }
+
+                // 判断迟到
+                if (currentTotalMinutes > workStartTotalMinutes) {
+                    record.setStatus((byte) 1);
+                    record.setRemark("上班迟到（" + (currentTotalMinutes - workStartTotalMinutes) + "分钟）");
+                    msg = "上班打卡成功（迟到）！";
+                } else {
+                    record.setStatus((byte) 0);
+                    record.setRemark("正常上班打卡");
+                    msg = "上班打卡成功！";
+                }
+            }
+            // ============= 下班打卡逻辑（新增：早退判断）=============
+            else {
+                // 解析下班时间
+                Time workEndTime = rule.getWorkEndTime();
+                int workEndHour = workEndTime.getHours();
+                int workEndMinute = workEndTime.getMinutes();
+                int workEndTotalMinutes = workEndHour * 60 + workEndMinute;
+
+                // 早退阈值
+                int earlyThreshold = rule.getEarlyThreshold() != null ? rule.getEarlyThreshold() : 15;
+                int earlyLimitMinutes = workEndTotalMinutes - earlyThreshold;
+
+                // 判断早退
+                if (currentTotalMinutes < earlyLimitMinutes) {
+                    record.setStatus((byte) 2); // 早退
+                    record.setRemark("下班早退（" + (earlyLimitMinutes - currentTotalMinutes) + "分钟）");
+                    msg = "下班打卡成功（早退）！";
+                } else {
+                    record.setStatus((byte) 0); // 正常
+                    record.setRemark("正常下班打卡");
+                    msg = "下班打卡成功！";
+                }
             }
 
-            attendanceRecordDao.insert(record);
+            // 插入记录
+//            attendanceRecordDao.insert(record);
 
-            Map<String, Object> data = new HashMap<>();
-            data.put("status", record.getStatus());
-            data.put("checkTime", new SimpleDateFormat("HH:mm:ss").format(record.getCheckInTime()));
-            data.put("message", record.getStatus() == 0 ? "打卡成功！" : "打卡成功（迟到）！");
+            // 构建消息
+            PunchMessage msg1 = new PunchMessage();
+            msg1.setEmpId(empId);
+            msg1.setPunchType(punchType);
+            msg1.setCheckTime(new Date());
+            msg1.setStatus(record.getStatus());
+            msg1.setRemark(record.getRemark());
 
-            return JsonUtil.objectToJson(data, "打卡成功！");
+            // 原来的代码
+// rabbitTemplate.convertAndSend(..., msg);
+
+// 改成 JSON 字符串发送（SSM 最稳）
+            String json = com.alibaba.fastjson.JSON.toJSONString(msg1);
+            rabbitTemplate.convertAndSend(
+                    "punch.exchange",   // 正确
+                    "punch.route",      // 正确
+                    json
+            );
+
+            return JsonUtil.objectToJson(null,"打卡成功!");
+
+//            Map<String, Object> data = new HashMap<>();
+//            data.put("punchType", punchType);
+//            data.put("punchTypeName", punchTypeName);
+//            data.put("status", record.getStatus());
+//            data.put("checkTime", new SimpleDateFormat("HH:mm:ss").format(record.getCheckInTime()));
+//            data.put("message", msg);
+//
+//            return JsonUtil.objectToJson(data, msg);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -535,7 +631,7 @@ public class ReceptionHomeController {
     }
 
     /**
-     * 获取今日打卡状态和打卡资格
+     * 获取今日打卡状态 - 区分上班/下班，互不影响
      */
     @RequestMapping(value = "/punch/status", method = RequestMethod.GET)
     @ResponseBody
@@ -547,15 +643,29 @@ public class ReceptionHomeController {
             }
 
             LocalDate today = LocalDate.now();
+            Calendar cal = Calendar.getInstance();
+            int currentHour = cal.get(Calendar.HOUR_OF_DAY);
+            int currentMinute = cal.get(Calendar.MINUTE);
+            int currentTotalMinutes = currentHour * 60 + currentMinute;
 
-            // 首先检查今天是否有已批准的请假
+            // ============= 自动判断当前是上班/下班时段 =============
+            int currentPunchType; // 1=上班 0=下班
+            String currentPunchTypeName;
+            if (currentHour < 12) {
+                currentPunchType = 1;
+                currentPunchTypeName = "上班";
+            } else {
+                currentPunchType = 0;
+                currentPunchTypeName = "下班";
+            }
+
+            // 检查今日是否已批准请假
             List<LeaveApplication> approvedLeaves = leaveApplicationDao.findByEmpId(empId, 0, 100);
             Date todayDate = java.sql.Date.valueOf(today);
             boolean onLeaveToday = false;
             if (approvedLeaves != null) {
                 for (LeaveApplication leave : approvedLeaves) {
                     if (leave.getApproveStatus() != null && leave.getApproveStatus() == 1) {
-                        // 已批准的请假，检查日期范围
                         if (leave.getStartTime() != null && leave.getEndTime() != null) {
                             if (!todayDate.before(leave.getStartTime()) && !todayDate.after(leave.getEndTime())) {
                                 onLeaveToday = true;
@@ -567,10 +677,11 @@ public class ReceptionHomeController {
             }
 
             Map<String, Object> data = new HashMap<>();
+            data.put("currentPunchType", currentPunchType);
+            data.put("currentPunchTypeName", currentPunchTypeName);
 
-            // 如果今天请假，直接返回请假状态
+            // 今日请假，直接返回
             if (onLeaveToday) {
-                // 获取考勤规则用于显示工作时间
                 AttendanceRule ruleForLeave = attendanceRuleDao.findLatest();
                 String workStartTimeStr = "09:00";
                 String workEndTimeStr = "18:00";
@@ -585,25 +696,28 @@ public class ReceptionHomeController {
                 data.put("punched", false);
                 data.put("canPunch", false);
                 data.put("onLeave", true);
-                data.put("status", 5); // 请假状态
+                data.put("status", 5);
                 data.put("statusText", "已请假");
                 data.put("message", "今日已批准请假，无需打卡");
                 return JsonUtil.objectToJson(data, "获取成功！");
             }
 
-            List<AttendanceRecord> todayRecords = attendanceRecordDao.findByEmpIdAndDateRange(
-                    empId, today, today, -1, 1);
+            // ============= 查询当前时段（上班/下班）的打卡记录 =============
+            List<AttendanceRecord> todayTypeRecords = attendanceRecordDao.findByEmpIdAndDateRange(
+                    empId, today, today, -1, currentPunchType);
 
             // 获取考勤规则
             AttendanceRule rule = attendanceRuleDao.findLatest();
             String workStartTimeStr = "09:00";
             String workEndTimeStr = "18:00";
             int lateThreshold = 15;
+            int earlyThreshold = 15;
 
             if (rule != null) {
                 Time workStartTime = rule.getWorkStartTime();
                 Time workEndTime = rule.getWorkEndTime();
                 lateThreshold = rule.getLateThreshold() != null ? rule.getLateThreshold() : 15;
+                earlyThreshold = rule.getEarlyThreshold() != null ? rule.getEarlyThreshold() : 15;
                 workStartTimeStr = String.format("%02d:%02d", workStartTime.getHours(), workStartTime.getMinutes());
                 workEndTimeStr = String.format("%02d:%02d", workEndTime.getHours(), workEndTime.getMinutes());
             }
@@ -611,46 +725,60 @@ public class ReceptionHomeController {
             data.put("workStartTime", workStartTimeStr);
             data.put("workEndTime", workEndTimeStr);
             data.put("lateThreshold", lateThreshold);
+            data.put("earlyThreshold", earlyThreshold);
 
-            if (todayRecords != null && !todayRecords.isEmpty()) {
-                AttendanceRecord record = todayRecords.get(0);
+            // ============= 已打卡：显示当前时段状态 =============
+            if (todayTypeRecords != null && !todayTypeRecords.isEmpty()) {
+                AttendanceRecord record = todayTypeRecords.get(0);
                 data.put("punched", true);
                 data.put("canPunch", false);
                 data.put("checkTime", record.getCheckInTime() != null ?
                         new SimpleDateFormat("HH:mm:ss").format(record.getCheckInTime()) : "");
                 data.put("status", record.getStatus());
                 data.put("statusText", getStatusText(record.getStatus()));
-            } else {
+            }
+            // ============= 未打卡：根据时段判断可打卡状态 =============
+            else {
                 data.put("punched", false);
-
-                // 判断是否可以打卡
                 if (rule != null) {
-                    Calendar cal = Calendar.getInstance();
-                    int currentHour = cal.get(Calendar.HOUR_OF_DAY);
-                    int currentMinute = cal.get(Calendar.MINUTE);
-                    int currentTotalMinutes = currentHour * 60 + currentMinute;
+                    // -------- 上班时段判断 --------
+                    if (currentPunchType == 1) {
+                        Time workStartTime = rule.getWorkStartTime();
+                        int workStartTotalMinutes = workStartTime.getHours() * 60 + workStartTime.getMinutes();
+                        int lateLimitMinutes = workStartTotalMinutes + lateThreshold;
 
-                    Time workStartTime = rule.getWorkStartTime();
-                    int workStartTotalMinutes = workStartTime.getHours() * 60 + workStartTime.getMinutes();
-                    int lateLimitMinutes = workStartTotalMinutes + lateThreshold;
+                        if (currentTotalMinutes > lateLimitMinutes) {
+                            data.put("canPunch", false);
+                            data.put("status", 3);
+                            data.put("statusText", "缺勤");
+                            data.put("message", "已超过上班打卡时间，请申请补卡");
+                        } else if (currentTotalMinutes > workStartTotalMinutes) {
+                            data.put("canPunch", true);
+                            data.put("status", 1);
+                            data.put("statusText", "迟到中");
+                            data.put("message", "已迟到" + (currentTotalMinutes - workStartTotalMinutes) + "分钟");
+                        } else {
+                            data.put("canPunch", true);
+                            data.put("status", 0);
+                            data.put("statusText", "未打卡（上班）");
+                        }
+                    }
+                    // -------- 下班时段判断 --------
+                    else {
+                        Time workEndTime = rule.getWorkEndTime();
+                        int workEndTotalMinutes = workEndTime.getHours() * 60 + workEndTime.getMinutes();
+                        int earlyLimitMinutes = workEndTotalMinutes - earlyThreshold;
 
-                    if (currentTotalMinutes > lateLimitMinutes) {
-                        // 超过迟到阈值，不能打卡
-                        data.put("canPunch", false);
-                        data.put("status", 3); // 缺勤状态
-                        data.put("statusText", "缺勤");
-                        data.put("message", "已超过打卡时间，请申请补卡");
-                    } else if (currentTotalMinutes > workStartTotalMinutes) {
-                        // 已迟到但可以打卡
-                        data.put("canPunch", true);
-                        data.put("status", 1); // 将会是迟到
-                        data.put("statusText", "迟到中");
-                        data.put("message", "已迟到" + (currentTotalMinutes - workStartTotalMinutes) + "分钟");
-                    } else {
-                        // 正常可打卡
-                        data.put("canPunch", true);
-                        data.put("status", 0);
-                        data.put("statusText", "未打卡");
+                        if (currentTotalMinutes < earlyLimitMinutes) {
+                            data.put("canPunch", true);
+                            data.put("status", 2);
+                            data.put("statusText", "早退中");
+                            data.put("message", "即将早退" + (earlyLimitMinutes - currentTotalMinutes) + "分钟");
+                        } else {
+                            data.put("canPunch", true);
+                            data.put("status", 0);
+                            data.put("statusText", "未打卡（下班）");
+                        }
                     }
                 } else {
                     data.put("canPunch", true);
@@ -672,12 +800,18 @@ public class ReceptionHomeController {
     private String getStatusText(Byte status) {
         if (status == null) return "未知";
         switch (status) {
-            case 0: return "正常";
-            case 1: return "迟到";
-            case 2: return "早退";
-            case 3: return "缺勤";
-            case 4: return "外勤";
-            default: return "未知";
+            case 0:
+                return "正常";
+            case 1:
+                return "迟到";
+            case 2:
+                return "早退";
+            case 3:
+                return "缺勤";
+            case 4:
+                return "外勤";
+            default:
+                return "未知";
         }
     }
 
@@ -872,8 +1006,10 @@ public class ReceptionHomeController {
         }
     }
 
+
+
     /**
-     * 获取考勤排行榜数据
+     * 获取考勤排行榜数据（Redis ZSet 缓存 30分钟）
      */
     @RequestMapping(value = "/ranking", method = RequestMethod.GET)
     @ResponseBody
@@ -885,7 +1021,41 @@ public class ReceptionHomeController {
                 return JsonUtil.buildFalseJson(401, "未登录！");
             }
 
-            // 计算日期范围
+            // ====================== 1. 构建 Redis Key ======================
+            String redisKeyEmp = "attendance:ranking:emp:" + period;
+            String redisKeyDept = "attendance:ranking:dept:" + period;
+            final long CACHE_EXPIRE = 30 * 60;
+
+            boolean hasEmpCache = redisUtil.exists(redisKeyEmp);
+            boolean hasDeptCache = redisUtil.exists(redisKeyDept);
+
+            List<Map<String, Object>> top5Employees = new ArrayList<>();
+            List<Map<String, Object>> top5Depts = new ArrayList<>();
+
+            // ====================== 2. 从 Redis 读取两个排行榜 ======================
+            if (hasEmpCache && hasDeptCache) {
+                // 读取员工排行
+                Set<Object> empSet = redisUtil.zReverseRange(redisKeyEmp, 0, 4);
+                if (empSet != null) {
+                    for (Object o : empSet) {
+                        top5Employees.add((Map<String, Object>) o);
+                    }
+                }
+                // 读取部门排行
+                Set<Object> deptSet = redisUtil.zReverseRange(redisKeyDept, 0, 4);
+                if (deptSet != null) {
+                    for (Object o : deptSet) {
+                        top5Depts.add((Map<String, Object>) o);
+                    }
+                }
+
+                Map<String, Object> result = new HashMap<>();
+                result.put("employeeRanking", top5Employees);
+                result.put("deptRanking", top5Depts);
+                return JsonUtil.objectToJson(result, "获取成功！[缓存]");
+            }
+
+            // ====================== 3. 缓存不存在 → 查询数据库 ======================
             LocalDate now = LocalDate.now();
             LocalDate startDate;
             if ("year".equals(period)) {
@@ -896,30 +1066,24 @@ public class ReceptionHomeController {
                 startDate = now.withDayOfMonth(1);
             }
 
-            // 获取所有员工
             List<EmpInfo> employees = empInfoDao.findAll(0, 1000);
-
-            // 统计每个员工的考勤次数
             List<Map<String, Object>> employeeRanking = new ArrayList<>();
             Map<Integer, Integer> deptAttendance = new HashMap<>();
             Map<Integer, Integer> deptTotal = new HashMap<>();
 
             for (EmpInfo emp : employees) {
-                // 统计正常打卡记录（status=0）
                 List<AttendanceRecord> records = attendanceRecordDao.findByEmpIdAndDateRange(
-                        emp.getEmpId(), startDate, now, 0, 1); // status=0 正常
+                        emp.getEmpId(), startDate, now, 0, 1);
                 int attendanceCount = records != null ? records.size() : 0;
 
-                // 统计已通过的补卡记录（approve_status=1）
                 List<SupplementCard> supplements = supplementCardDao.findByEmpId(emp.getEmpId(), 0, 1000);
                 int supplementCount = 0;
                 if (supplements != null) {
-                    java.sql.Date startSqlDate = java.sql.Date.valueOf(startDate);
-                    java.sql.Date endSqlDate = java.sql.Date.valueOf(now);
+                    java.sql.Date startSql = java.sql.Date.valueOf(startDate);
+                    java.sql.Date endSql = java.sql.Date.valueOf(now);
                     for (SupplementCard sc : supplements) {
-                        // 只统计已通过的且在日期范围内的补卡
-                        if (sc.getApproveStatus() != null && sc.getApproveStatus() == 1 && sc.getCheckDate() != null) {
-                            if (!sc.getCheckDate().before(startSqlDate) && !sc.getCheckDate().after(endSqlDate)) {
+                        if (sc.getApproveStatus() == 1 && sc.getCheckDate() != null) {
+                            if (!sc.getCheckDate().before(startSql) && !sc.getCheckDate().after(endSql)) {
                                 supplementCount++;
                             }
                         }
@@ -927,21 +1091,18 @@ public class ReceptionHomeController {
                 }
 
                 int count = attendanceCount + supplementCount;
-
                 Map<String, Object> empData = new HashMap<>();
                 empData.put("empName", emp.getEmpName());
                 empData.put("deptId", emp.getDeptId());
                 empData.put("attendanceCount", count);
                 employeeRanking.add(empData);
 
-                // 累计部门数据
                 deptAttendance.merge(emp.getDeptId(), count, Integer::sum);
                 deptTotal.merge(emp.getDeptId(), 1, Integer::sum);
             }
 
-            // 按考勤次数排序，取前5
+            // 员工排行排序
             employeeRanking.sort((a, b) -> (Integer) b.get("attendanceCount") - (Integer) a.get("attendanceCount"));
-            List<Map<String, Object>> top5Employees = new ArrayList<>();
             for (int i = 0; i < Math.min(5, employeeRanking.size()); i++) {
                 Map<String, Object> emp = employeeRanking.get(i);
                 SysDept dept = sysDeptDao.findById((Integer) emp.get("deptId"));
@@ -950,14 +1111,14 @@ public class ReceptionHomeController {
                 top5Employees.add(emp);
             }
 
-            // 计算部门考勤率排行
+            // 部门排行
+            int workDays = now.getDayOfMonth();
             List<Map<String, Object>> deptRanking = new ArrayList<>();
-            int workDays = now.getDayOfMonth(); // 简化计算
             for (Integer deptId : deptTotal.keySet()) {
                 SysDept dept = sysDeptDao.findById(deptId);
                 int totalEmp = deptTotal.get(deptId);
-                int totalAttendance = deptAttendance.getOrDefault(deptId, 0);
-                double rate = (totalAttendance * 100.0) / (totalEmp * workDays);
+                int totalAttend = deptAttendance.getOrDefault(deptId, 0);
+                double rate = (totalAttend * 100.0) / (totalEmp * workDays);
 
                 Map<String, Object> deptData = new HashMap<>();
                 deptData.put("deptName", dept != null ? dept.getDeptName() : "");
@@ -965,26 +1126,115 @@ public class ReceptionHomeController {
                 deptData.put("attendanceRate", String.format("%.1f", rate));
                 deptRanking.add(deptData);
             }
+
             deptRanking.sort((a, b) -> Double.compare(
                     Double.parseDouble((String) b.get("attendanceRate")),
                     Double.parseDouble((String) a.get("attendanceRate"))));
 
-            List<Map<String, Object>> top5Depts = new ArrayList<>();
             for (int i = 0; i < Math.min(5, deptRanking.size()); i++) {
-                Map<String, Object> dept = deptRanking.get(i);
-                dept.put("rank", i + 1);
-                top5Depts.add(dept);
+                Map<String, Object> d = deptRanking.get(i);
+                d.put("rank", i + 1);
+                top5Depts.add(d);
             }
 
+            // ====================== 4. 两个排行榜都存入 Redis ======================
+            // 存员工
+            for (Map<String, Object> e : top5Employees) {
+                redisUtil.zAdd(redisKeyEmp, e, (int) e.get("attendanceCount"));
+            }
+            // 存部门（用考勤率当分数）
+            for (Map<String, Object> d : top5Depts) {
+                double rate = Double.parseDouble((String) d.get("attendanceRate"));
+                redisUtil.zAdd(redisKeyDept, d, rate);
+            }
+
+            redisUtil.expire(redisKeyEmp, CACHE_EXPIRE);
+            redisUtil.expire(redisKeyDept, CACHE_EXPIRE);
+
+            // ====================== 5. 返回 ======================
             Map<String, Object> result = new HashMap<>();
             result.put("employeeRanking", top5Employees);
             result.put("deptRanking", top5Depts);
-
-            return JsonUtil.objectToJson(result, "获取成功！");
+            return JsonUtil.objectToJson(result, "获取成功！[数据库]");
 
         } catch (Exception e) {
             e.printStackTrace();
             return JsonUtil.buildFalseJson(500, e.getMessage());
         }
+    }
+
+    @GetMapping("/exportMonthAttendance")
+    public void exportMonthAttendance(
+            HttpServletResponse response,
+            HttpSession session
+    ) throws Exception {
+
+        // 1. 获取当前登录员工信息
+        Integer empId = (Integer) session.getAttribute("receptionEmpId");
+        String empName = (String) session.getAttribute("receptionEmpName");
+
+        if (empId == null) {
+            response.setContentType("application/json;charset=utf-8");
+            response.getWriter().write("{\"code\":401,\"msg\":\"未登录\"}");
+            return;
+        }
+
+        // 2. 查询【本月所有考勤记录】
+        List<AttendanceRecord> recordList = attendanceRecordService.getMonthAttendance(empId);
+
+        // 3. 创建 Excel
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("考勤记录");
+
+        // 表头
+        String[] headers = {
+                "日期", "星期", "上班打卡", "下班打卡",
+                "考勤状态", "迟到(分)", "早退(分)", "备注"
+        };
+
+        Row header = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            header.createCell(i).setCellValue(headers[i]);
+        }
+
+        // 4. 写入数据
+        int row = 1;
+        for (AttendanceRecord r : recordList) {
+            Row dataRow = sheet.createRow(row++);
+
+            // 日期
+            dataRow.createCell(0).setCellValue(r.getCheckDate().toString());
+            // 星期
+            dataRow.createCell(1).setCellValue(getWeekDay(r.getCheckDate()));
+            // 上班
+            dataRow.createCell(2).setCellValue(r.getCheckInTime() == null ? "" : r.getCheckInTime().toString());
+            // 状态 0正常 1迟到 2早退 3缺勤
+            String status = r.getStatus() == 0 ? "正常"
+                    : r.getStatus() == 1 ? "迟到"
+                    : r.getStatus() == 2 ? "早退" : "缺勤";
+            dataRow.createCell(4).setCellValue(status);;
+            dataRow.createCell(5).setCellValue(r.getRemark() == null ? "" : r.getRemark());
+        }
+
+        // 自动列宽
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // 5. 下载
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        String fileName = URLEncoder.encode(empName + "_本月考勤记录.xlsx", "UTF-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+
+        workbook.write(response.getOutputStream());
+        workbook.close();
+    }
+
+    // ===================== 工具方法 =====================
+    private String getWeekDay(Date date) {
+        String[] weeks = {"日", "一", "二", "三", "四", "五", "六"};
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return weeks[cal.get(Calendar.DAY_OF_WEEK) - 1];
     }
 }

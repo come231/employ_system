@@ -1,19 +1,15 @@
 package Test00;
 
-import com.hkd.mapper.SysUserRoleQueryDao;
 import com.hkd.pojo.*;
 import com.hkd.service.*;
 import com.hkd.util.BCryptUtil;
 import com.hkd.util.CommonUtil;
-import com.hkd.util.JsonUtil;
 import com.hkd.util.PageQuery;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

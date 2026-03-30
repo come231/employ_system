@@ -12,7 +12,27 @@
 
     <!-- 开启注解扫描，只扫描Controller -->
     <context:component-scan base-package="com.hkd.controller"/>
+    <context:component-scan base-package="com.hkd.util"/>
 
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <!-- 放行 登录页面 -->
+            <mvc:exclude-mapping path="/reception/page/login.do"/>
+            <mvc:exclude-mapping path="/admin/page/login.do"/>
+
+            <!-- 必须加这两个：放行 登录接口！！！ -->
+            <mvc:exclude-mapping path="/reception/login.do"/>
+            <mvc:exclude-mapping path="/admin/login1.do"/>
+
+            <mvc:exclude-mapping path="/static/**"/>
+            <bean class="com.hkd.util.JwtInterceptor"/>
+        </mvc:interceptor>
+
+
+    </mvc:interceptors>
+    
+    
     <!-- 开启SpringMVC注解驱动 -->
     <mvc:annotation-driven>
 <!--        消息转换器配置-->
